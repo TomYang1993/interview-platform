@@ -48,3 +48,25 @@ export async function getQuestionDetailBySlug(slug: string, userId?: string) {
     locked
   };
 }
+
+/**
+ * A few published questions for the home-page hero: company-attributed
+ * ones first, then the rest, capped at `limit`.
+ */
+export async function listHeroQuestions(limit = 4) {
+  const questions = await prisma.question.findMany({
+    where: { isPublished: true },
+    orderBy: [{ difficulty: 'asc' }, { createdAt: 'desc' }],
+    select: {
+      slug: true, title: true, difficulty: true, type: true, accessTier: true,
+      timeLimitMinutes: true, renderData: true,
+    },
+  });
+  return questions
+    .map(({ renderData, ...q }) => {
+      const rd = renderData as QuestionRenderData | null;
+      return { ...q, description: rd?.description ?? null, companies: rd?.companies ?? [] };
+    })
+    .sort((a, b) => Number(b.companies.length > 0) - Number(a.companies.length > 0))
+    .slice(0, limit);
+}

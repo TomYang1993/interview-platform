@@ -677,6 +677,11 @@ code {
   to { transform: translateX(-50%); }
 }
 
+@keyframes hero-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 @keyframes tick-colon {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }

@@ -3,6 +3,8 @@ import { ArrowRight, Coffee } from "lucide-react";
 import { HomeCountdown } from "@/components/home-countdown";
 import { prisma } from "@/lib/db/prisma";
 import { listCompanyTags } from "@/lib/question-tags";
+import { listHeroQuestions } from "@/lib/questions";
+import { HeroQuestionRotator } from "@/components/hero-question-rotator";
 import { CompanyLogo } from "@/components/company-logo";
 
 /* Hallmark · genre: modern-minimal · macrostructure: Split Studio · theme: Cobalt (existing tokens)
@@ -15,11 +17,7 @@ import { CompanyLogo } from "@/components/company-logo";
 const SPECIMEN = {
   slug: "debounce-function",
   title: "Debounce Function",
-  difficulty: "Medium",
   minutes: 30,
-  tier: "Free",
-  prompt:
-    "Implement debounce(fn, delay). The returned function delays calling fn until delay ms have passed since the last invocation — every new call resets the timer.",
   starter: `function debounce(fn, delay) {
   // your code here
 }`,
@@ -30,7 +28,8 @@ const label =
 const rule = "border-t border-line";
 
 export default async function HomePage() {
-  const companies = (await listCompanyTags(prisma)).map((t) => t.name);
+  const [companyTags, heroQuestions] = await Promise.all([listCompanyTags(prisma), listHeroQuestions()]);
+  const companies = companyTags.map((t) => t.name);
 
   return (
     <div className="w-screen ml-[calc(-50vw+50%)] -mt-8 -mb-16 overflow-x-clip">
@@ -63,26 +62,7 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <Link
-          href={`/questions/${SPECIMEN.slug}`}
-          className="md:col-span-5 block border border-line rounded-[10px] bg-surface p-5 hover:border-brand transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand group"
-        >
-          <div className={`${label} flex flex-wrap gap-x-4 gap-y-1 mb-4`}>
-            <span className="text-brand">{SPECIMEN.tier}</span>
-            <span>{SPECIMEN.difficulty}</span>
-            <span className="tabular-nums">{SPECIMEN.minutes} min</span>
-            <span>JS · TS</span>
-          </div>
-          <h2 className="text-[1.25rem] font-semibold tracking-tight mb-3">
-            {SPECIMEN.title}
-          </h2>
-          <p className="font-mono text-[0.8rem] leading-[1.6] text-ink-secondary m-0">
-            {SPECIMEN.prompt}
-          </p>
-          <span className="mt-5 inline-flex items-center gap-1 text-[0.85rem] font-medium text-ink group-hover:text-brand transition-colors duration-150">
-            Open question <ArrowRight size={14} aria-hidden="true" />
-          </span>
-        </Link>
+        <HeroQuestionRotator questions={heroQuestions} />
       </section>
 
       {/* ─── Wordmark marquee — where the questions come from ─── */}
