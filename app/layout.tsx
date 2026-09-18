@@ -7,7 +7,6 @@ import '@/styles/globals.css';
 import { SiteHeader } from '@/components/site-header';
 import { HeaderWrapper } from '@/components/header-wrapper';
 import { AnnouncementBanner } from '@/components/announcement-banner';
-import { BANNER_COOKIE } from '@/lib/banner';
 import { ToastProvider } from '@/components/toast-provider';
 import { UserProvider } from '@/components/user-provider';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -38,7 +37,6 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [user, cookieStore] = await Promise.all([getCurrentServerUser(), cookies()]);
   const cookieTheme = cookieStore.get('theme')?.value;
-  const showBanner = !cookieStore.get(BANNER_COOKIE);
   const theme: Theme = VALID_THEMES.includes(cookieTheme as Theme) ? (cookieTheme as Theme) : DEFAULT_THEME;
 
   return (
@@ -48,7 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <UserProvider user={user}>
             <ToastProvider>
               <HeaderWrapper>
-                {showBanner && <AnnouncementBanner />}
+                <AnnouncementBanner />
                 <SiteHeader />
               </HeaderWrapper>
               <main className="container page-shell">{children}</main>

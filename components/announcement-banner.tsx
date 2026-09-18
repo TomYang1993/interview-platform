@@ -3,16 +3,14 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { BANNER_COOKIE } from '@/lib/banner';
 
-// Site-wide strip above the header. Dismissal is a cookie so the server
-// skips rendering it on the next request — no flash for returning visitors.
+// Site-wide strip above the header. Dismiss hides it for this page view only —
+// it comes back on the next load by design.
 export function AnnouncementBanner() {
   const [open, setOpen] = useState(true);
   if (!open) return null;
 
   function dismiss() {
-    document.cookie = `${BANNER_COOKIE}=1; path=/; max-age=${60 * 60 * 24 * 90}; samesite=lax`;
     setOpen(false);
   }
 
