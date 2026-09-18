@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Coffee } from "lucide-react";
 import { HomeCountdown } from "@/components/home-countdown";
 import { prisma } from "@/lib/db/prisma";
-import { listCompanyTags } from "@/lib/question-tags";
+import { companyLogoUrl, listCompanyTags } from "@/lib/question-tags";
 
 /* Hallmark · genre: modern-minimal · macrostructure: Split Studio · theme: Cobalt (existing tokens)
  * enrichment: none · nav: unchanged (site-header) · footer: Ft2 · studied: yes · DNA-source: url
@@ -96,8 +96,10 @@ export default async function HomePage() {
               <li
                 key={`${name}-${i}`}
                 aria-hidden={i >= companies.length || undefined}
-                className={`text-[1.35rem] font-semibold tracking-[-0.02em] text-muted whitespace-nowrap${i >= companies.length ? " motion-reduce:hidden" : ""}`}
+                className={`inline-flex items-center gap-2.5 text-[1.35rem] font-semibold tracking-[-0.02em] text-muted whitespace-nowrap${i >= companies.length ? " motion-reduce:hidden" : ""}`}
               >
+                {/* eslint-disable-next-line @next/next/no-img-element -- third-party favicon, no optimisation needed */}
+                <img src={companyLogoUrl(name)} alt="" width={22} height={22} decoding="async" referrerPolicy="no-referrer" className="rounded-[4px]" />
                 {name}
               </li>
             ))}

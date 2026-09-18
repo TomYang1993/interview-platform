@@ -4,6 +4,7 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import { DIFFICULTY_LABEL, DIFFICULTY_TEXT_CLASS, TYPE_LABEL } from '@/types/domain';
 import { Check, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { companyLogoUrl } from '@/lib/question-tags';
 
 export interface QuestionRow {
   id: string;
@@ -70,7 +71,9 @@ function CompanyRow({ companies, type }: { companies: string[]; type: string }) 
     <div className={clsx(label, 'flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2.5')}>
       <span className="md:hidden text-muted">{type}</span>
       {companies.map((c) => (
-        <span key={c} className="inline-flex items-center h-5 px-1.5 rounded-[4px] border border-line text-ink-secondary normal-case tracking-normal font-medium">
+        <span key={c} className="inline-flex items-center gap-1.5 h-5 pl-1 pr-1.5 rounded-[4px] border border-line text-ink-secondary normal-case tracking-normal font-medium">
+          {/* eslint-disable-next-line @next/next/no-img-element -- third-party favicon, no optimisation needed */}
+          <img src={companyLogoUrl(c, 32)} alt="" width={12} height={12} loading="lazy" decoding="async" referrerPolicy="no-referrer" className="rounded-[2px]" />
           {c}
         </span>
       ))}

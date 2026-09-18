@@ -31,3 +31,13 @@ export async function ensureTagIds(db: Db, names: string[], kind: TagKind): Prom
 export function listCompanyTags(db: Db) {
   return db.questionTag.findMany({ where: { kind: 'COMPANY' }, orderBy: { name: 'asc' }, select: { name: true } });
 }
+
+/**
+ * Logo for a company tag via Google's favicon service.
+ * ponytail: domain is derived as `<name>.com`, which holds for every company we list;
+ * add a `domain` column on QuestionTag when one breaks the convention.
+ */
+export function companyLogoUrl(name: string, size = 64) {
+  const domain = `${name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`;
+}
