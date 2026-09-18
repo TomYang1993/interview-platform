@@ -22,7 +22,7 @@ export function AnnouncementBanner() {
           aria-hidden="true"
         />
         <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-0.5 min-w-0">
-          <span>New questions are coming in — the bank keeps growing.</span>
+          <span>New questions are coming in.</span>
           <Link href="/questions" className="font-medium text-ink hover:text-brand transition-colors duration-150 whitespace-nowrap">
             See what&apos;s new →
           </Link>
