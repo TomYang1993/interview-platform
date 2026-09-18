@@ -77,7 +77,14 @@ export default async function QuestionsPage({ searchParams: searchParamsPromise 
 
   return (
     <div className="max-w-[1120px] mx-auto px-4 sm:px-6">
-      <div className="grid gap-5 py-8">
+      <div className="grid gap-6 py-8 max-md:py-4">
+        <div>
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted mb-3">Question bank</p>
+          <h1 className="text-[clamp(2rem,4vw,2.75rem)] font-bold leading-[1.05] tracking-[-0.03em] m-0">
+            <span className="tabular-nums">{questionRows.length}</span> questions, all from real screens.
+          </h1>
+        </div>
+
         <QuestionsStatsBar
           isLoggedIn={!!user}
           streak={streak}
