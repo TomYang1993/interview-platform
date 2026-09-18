@@ -21,13 +21,6 @@ const SPECIMEN = {
 }`,
 };
 
-const LANGUAGES = [
-  ["JavaScript", "Function questions", "Node runtime, hidden test cases"],
-  ["TypeScript", "Same questions, typed", "Compiled in the browser"],
-  ["React", "Component questions", "Live preview + DOM tests"],
-  ["Python", "Function questions", "Runs in-browser via Pyodide"],
-];
-
 const label =
   "font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted";
 const rule = "border-t border-line";
@@ -138,32 +131,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── 4 · Spec sheet — languages ─── */}
-      <section className={rule}>
-        <div className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-20 max-md:py-12">
-          <p className={`${label} mb-6`}>Languages and frameworks</p>
-          <dl className="m-0">
-            {LANGUAGES.map(([name, kind, note]) => (
-              <div
-                key={name}
-                className="grid md:grid-cols-12 gap-x-6 gap-y-1 py-4 border-t border-line last:border-b"
-              >
-                <dt className="md:col-span-3 text-[1.15rem] font-semibold tracking-tight">
-                  {name}
-                </dt>
-                <dd className="md:col-span-4 m-0 text-ink-secondary">
-                  {kind}
-                </dd>
-                <dd className="md:col-span-5 m-0 text-muted text-[0.9rem]">
-                  {note}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </section>
-
-      {/* ─── 5 · Closing line ─── */}
+      {/* ─── 4 · Closing line ─── */}
       <section className={rule}>
         <div className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-20 max-md:py-12 flex max-md:flex-col md:items-center justify-between gap-6">
           <p className="text-[clamp(1.5rem,3vw,2rem)] font-bold tracking-[-0.02em] leading-[1.15] max-w-[24ch] m-0">
