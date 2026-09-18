@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db/prisma";
 import { listCompanyTags } from "@/lib/question-tags";
 import { listHeroQuestions } from "@/lib/questions";
 import { HeroQuestionRotator } from "@/components/hero-question-rotator";
+import { SolveDemo } from "@/components/solve-demo";
 import { CompanyLogo } from "@/components/company-logo";
 
 /* Hallmark · genre: modern-minimal · macrostructure: Split Studio · theme: Cobalt (existing tokens)
@@ -13,15 +14,8 @@ import { CompanyLogo } from "@/components/company-logo";
  * pre-emit critique: P4 H4 E4 S4 R5 V4
  */
 
-// ponytail: real seed question, mirrors prisma/seeds/js/debounce-function.ts — keep in sync by hand
-const SPECIMEN = {
-  slug: "debounce-function",
-  title: "Debounce Function",
-  minutes: 30,
-  starter: `function debounce(fn, delay) {
-  // your code here
-}`,
-};
+// ponytail: mirrors prisma/seeds/python/web-crawler.ts — the question the solve demo plays back
+const SPECIMEN = { title: "Web Crawler", minutes: 30 };
 
 const label =
   "font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted";
@@ -91,25 +85,16 @@ export default async function HomePage() {
       {/* ─── 2 · Diptych, proof left — the editor ─── */}
       <section className={`${rule}`}>
         <div className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-20 max-md:py-12 grid md:grid-cols-12 gap-12 max-md:gap-8 items-center">
-          <figure className="md:col-span-6 md:order-1 max-md:order-2 m-0 border border-line rounded-[10px] bg-surface overflow-hidden">
-            <figcaption className={`${label} px-4 py-2.5 border-b border-line`}>
-              {SPECIMEN.slug}.js
-            </figcaption>
-            <pre className="m-0 p-4 font-mono text-[0.85rem] leading-[1.6] text-ink overflow-x-auto">
-              <code>{SPECIMEN.starter}</code>
-            </pre>
-            <div className={`${label} px-4 py-2.5 border-t border-line`}>
-              Run tests · hidden cases checked on submit
-            </div>
-          </figure>
+          <SolveDemo />
           <div className="md:col-span-6 md:order-2 max-md:order-1">
             <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.1] tracking-[-0.02em] mb-4">
               Solve it right here.
             </h2>
             <p className="text-ink-secondary leading-[1.65] max-w-[48ch] m-0">
               Every question ships with starter code, a full editor, and a
-              test runner. No setup — open a question and start typing.
-              Submit to run the hidden tests and get a verdict.
+              test runner. JavaScript, TypeScript, React and Python all run
+              in your browser — no setup. Submit to run the hidden tests and
+              get a verdict.
             </p>
           </div>
         </div>
