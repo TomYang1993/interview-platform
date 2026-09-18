@@ -30,7 +30,7 @@ export default async function HomePage() {
       {/* ─── Notice strip ─── */}
       <div className="border-b border-line bg-surface">
         <p className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-2.5 m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.85rem] text-ink-secondary">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand shrink-0" aria-hidden="true" />
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand shrink-0 animate-[breathe_2.4s_ease-in-out_infinite] motion-reduce:animate-none" aria-hidden="true" />
           <span>New questions are coming in — the bank keeps growing.</span>
           <Link href="/questions" className="font-medium text-ink hover:text-brand transition-colors duration-150 whitespace-nowrap">
             See what&apos;s new →
