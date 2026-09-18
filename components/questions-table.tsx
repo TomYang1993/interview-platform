@@ -4,6 +4,7 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import { DIFFICULTY_LABEL, DIFFICULTY_TEXT_CLASS, TYPE_LABEL } from '@/types/domain';
 import { Check, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { splitCompanyTags } from '@/lib/companies';
 
 export interface QuestionRow {
   id: string;
@@ -60,6 +61,26 @@ function StatusGlyph({ status, passedCount }: { status: string; passedCount: num
   );
 }
 
+function TagRow({ tags, type }: { tags: string[]; type: string }) {
+  const { companies, topics } = splitCompanyTags(tags);
+  if (companies.length === 0 && topics.length === 0) {
+    return <span className={clsx(label, 'md:hidden block mt-2 text-muted')}>{type}</span>;
+  }
+  return (
+    <div className={clsx(label, 'flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2.5')}>
+      <span className="md:hidden text-muted">{type}</span>
+      {companies.map((c) => (
+        <span key={c} className="inline-flex items-center h-5 px-1.5 rounded-[4px] border border-line text-ink-secondary normal-case tracking-normal font-medium">
+          {c}
+        </span>
+      ))}
+      {topics.map((t) => (
+        <span key={t} className="text-muted">{t}</span>
+      ))}
+    </div>
+  );
+}
+
 export function QuestionsTable({ questions, isLoggedIn, page, pageSize, totalPages, totalFiltered, onPageChange }: QuestionsTableProps) {
   return (
     <div className="flex flex-col">
@@ -95,7 +116,7 @@ export function QuestionsTable({ questions, isLoggedIn, page, pageSize, totalPag
                 {q.description && (
                   <p className="text-[0.88rem] text-muted leading-relaxed m-0 mt-1 line-clamp-2 max-w-[64ch]">{q.description}</p>
                 )}
-                <span className={clsx(label, 'md:hidden block mt-2 text-muted')}>{TYPE_LABEL[q.type] ?? q.type}</span>
+                <TagRow tags={q.tags} type={TYPE_LABEL[q.type] ?? q.type} />
               </td>
 
               {/* Type */}

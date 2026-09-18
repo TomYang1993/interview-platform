@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Coffee } from "lucide-react";
 import { HomeCountdown } from "@/components/home-countdown";
+import { COMPANIES } from "@/lib/companies";
 
 /* Hallmark · genre: modern-minimal · macrostructure: Split Studio · theme: Cobalt (existing tokens)
  * enrichment: none · nav: unchanged (site-header) · footer: Ft2 · studied: yes · DNA-source: url
@@ -21,13 +22,6 @@ const SPECIMEN = {
   // your code here
 }`,
 };
-
-// ponytail: hand-maintained list; move to a question.companies column when questions carry attribution
-const COMPANIES = [
-  "Meta", "DoorDash", "Netflix", "Roblox", "LinkedIn", "TikTok", "Pinterest",
-  "Snowflake", "Coinbase", "Stripe", "Google", "Amazon", "Microsoft",
-  "Bloomberg", "Uber", "Anthropic", "OpenAI",
-];
 
 const label =
   "font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted";
