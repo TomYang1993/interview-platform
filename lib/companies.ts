@@ -3,7 +3,7 @@
 export const COMPANIES = [
   'Meta', 'DoorDash', 'Netflix', 'Roblox', 'LinkedIn', 'TikTok', 'Pinterest',
   'Snowflake', 'Coinbase', 'Stripe', 'Google', 'Amazon', 'Microsoft',
-  'Bloomberg', 'Uber', 'Anthropic', 'OpenAI',
+  'Bloomberg', 'Uber', 'Anthropic', 'OpenAI', 'Visa',
 ] as const;
 
 const byLower = new Map(COMPANIES.map((c) => [c.toLowerCase(), c]));

@@ -212,7 +212,7 @@ export const rateLimiterButton: SeedQuestion = {
   difficulty: Difficulty.MEDIUM,
   accessTier: AccessTier.FREE,
   timeLimitMinutes: 45,
-  tags: ['react', 'hooks', 'timers', 'state'],
+  tags: ['react', 'hooks', 'timers', 'state', 'visa'],
   starterCode: {
     react: STARTER_CODE_REACT,
     reactTypescript: STARTER_CODE_REACT_TS,
