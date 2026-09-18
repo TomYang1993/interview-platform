@@ -3,7 +3,7 @@
 import { ChevronDown } from 'lucide-react';
 
 const selectClass =
-  'appearance-none bg-surface-raised border border-line text-ink text-xs max-md:text-sm font-semibold py-[0.35rem] max-md:py-2 pr-7 pl-3 rounded-md outline-none cursor-pointer transition-all duration-200 shadow-sm hover:border-brand hover:bg-brand/10 focus:border-brand focus:ring-2 focus:ring-brand/20';
+  'appearance-none bg-surface border border-line text-ink text-[0.85rem] max-md:text-base font-medium h-10 pr-8 pl-3 rounded-[6px] outline-none cursor-pointer transition-colors duration-150 hover:border-brand focus-visible:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand';
 
 interface QuestionsFiltersProps {
   type: string;
@@ -26,7 +26,7 @@ export function QuestionsFilters({ type, difficulty, status, onChange }: Questio
           <option value="FUNCTION_JS">JS/TS Logic</option>
           <option value="FUNCTION_PYTHON">Backend</option>
         </select>
-        <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted" />
+        <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted" />
       </div>
 
       <div className="relative">
@@ -40,7 +40,7 @@ export function QuestionsFilters({ type, difficulty, status, onChange }: Questio
           <option value="MEDIUM">Mid</option>
           <option value="HARD">Senior+</option>
         </select>
-        <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted" />
+        <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted" />
       </div>
 
       <div className="relative">
@@ -54,7 +54,7 @@ export function QuestionsFilters({ type, difficulty, status, onChange }: Questio
           <option value="attempted">Attempted</option>
           <option value="unattempted">Not Started</option>
         </select>
-        <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted" />
+        <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted" />
       </div>
     </>
   );

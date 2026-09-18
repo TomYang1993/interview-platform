@@ -1,4 +1,7 @@
-import { Flame, Trophy, Code2, Layout, Server } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+
+/* Hallmark · genre: modern-minimal · macrostructure: Index-First · theme: Cobalt (existing tokens) · designed-as-app */
 
 interface CategoryStat {
   solved: number;
@@ -15,11 +18,24 @@ interface QuestionsStatsBarProps {
   backend: CategoryStat;
 }
 
-function MiniProgress({ solved, total, colorClass, muted }: { solved: number; total: number; colorClass: string; muted?: boolean }) {
+const label = 'font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted';
+
+function Readout({ name, solved, total, dim }: { name: string; solved: number; total: number; dim: boolean }) {
   const pct = total > 0 ? (solved / total) * 100 : 0;
   return (
-    <div className="h-1 w-full bg-bg-subtle rounded-full overflow-hidden mt-1">
-      <div className={`h-full rounded-full transition-all duration-500 ease-in-out ${muted ? 'bg-muted/30' : colorClass}`} style={{ width: muted ? '0%' : `${pct}%` }} />
+    <div className="flex flex-col gap-2 min-w-[120px] flex-1">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className={label}>{name}</span>
+        <span className="font-mono tabular-nums text-[0.9rem] text-ink">
+          {dim ? '—' : <>{solved}<span className="text-muted">/{total}</span></>}
+        </span>
+      </div>
+      <div className="h-px w-full bg-line" aria-hidden="true">
+        <div
+          className="h-full bg-brand transition-[width] duration-500 ease-(--ease-out) motion-reduce:transition-none"
+          style={{ width: dim ? '0%' : `${pct}%` }}
+        />
+      </div>
     </div>
   );
 }
@@ -35,47 +51,41 @@ export function QuestionsStatsBar({
 }: QuestionsStatsBarProps) {
   const dim = !isLoggedIn;
 
+  if (dim) {
+    return (
+      <div className="pb-6 border-b border-line flex flex-wrap items-baseline gap-x-4 gap-y-2">
+        <p className="text-ink text-[1rem] m-0">Sign in to track solved questions and your streak.</p>
+        <Link
+          href="/auth"
+          className="inline-flex items-center gap-1 text-[0.95rem] font-medium text-brand hover:underline underline-offset-4 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          Sign in <ArrowRight size={14} aria-hidden="true" />
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex flex-wrap items-center gap-4 mb-8 max-md:mb-5 ${dim ? 'opacity-40 saturate-0 pointer-events-none select-none' : ''}`}>
-      {/* Hero Chip: Streak */}
-      <div className="flex items-center bg-surface border border-line-soft rounded-md px-4 py-3 gap-3 shadow-sm min-w-[140px] max-sm:flex-1 max-sm:min-w-[45%]">
-        <Flame size={20} className="text-orange-500 drop-shadow-sm" style={{ animation: streak > 0 && !dim ? 'flame-flicker 2s ease-in-out infinite' : undefined }} />
-        <div className="flex flex-col">
-          <span className="text-ink font-semibold leading-tight">{dim ? '—' : `${streak} ${streak === 1 ? 'day' : 'days'}`}</span>
-          <span className="text-muted text-[0.8rem] mt-[1px]">Streak</span>
+    <div className="grid md:grid-cols-12 gap-x-12 gap-y-6 pb-6 border-b border-line">
+      <div className="md:col-span-4 flex gap-10">
+        <div>
+          <p className={`${label} mb-1`}>Solved</p>
+          <p className="font-mono tabular-nums text-[1.75rem] leading-none text-ink m-0">
+            {dim ? '—' : <>{solvedCount}<span className="text-muted text-[1rem]">/{totalQuestions}</span></>}
+          </p>
+        </div>
+        <div>
+          <p className={`${label} mb-1`}>Streak</p>
+          <p className="font-mono tabular-nums text-[1.75rem] leading-none text-ink m-0">
+            {dim ? '—' : <>{streak}<span className="text-muted text-[1rem]"> {streak === 1 ? 'day' : 'days'}</span></>}
+          </p>
         </div>
       </div>
-
-      {/* Hero Chip: Solved */}
-      <div className="flex items-center bg-surface border border-line-soft rounded-md px-4 py-3 gap-3 shadow-sm min-w-[140px] max-sm:flex-1 max-sm:min-w-[45%]">
-        <Trophy size={20} className="text-yellow-400 drop-shadow-sm" />
-        <div className="flex flex-col">
-          <span className="text-ink font-semibold leading-tight">
-            {dim ? '—' : <>{solvedCount}<span className="text-muted text-[0.85em] font-medium ml-1">/{totalQuestions}</span></>}
-          </span>
-          <span className="text-muted text-[0.8rem] mt-[1px]">Solved</span>
-        </div>
+      <div className="md:col-span-8 flex flex-wrap gap-x-8 gap-y-4">
+        <Readout name="JS" solved={js.solved} total={js.total} dim={dim} />
+        <Readout name="UI" solved={ui.solved} total={ui.total} dim={dim} />
+        <Readout name="Backend" solved={backend.solved} total={backend.total} dim={dim} />
       </div>
-
-      <div className="hidden sm:block h-10 w-px bg-line-soft mx-2" />
-
-      {/* Category Chips */}
-      {[
-        { label: 'JS', icon: Code2, color: 'text-yellow-400', bar: 'bg-yellow-400', stat: js },
-        { label: 'UI', icon: Layout, color: 'text-blue-400', bar: 'bg-blue-400', stat: ui },
-        { label: 'Backend', icon: Server, color: 'text-green-400', bar: 'bg-green-400', stat: backend },
-      ].map(({ label, icon: Icon, color, bar, stat }) => (
-        <div key={label} className="flex flex-col justify-between bg-surface border border-line-soft rounded-md px-3 py-[0.6rem] gap-1.5 shadow-sm min-w-[120px] flex-1 sm:flex-none">
-          <div className="flex items-center gap-1.5 w-full">
-            <Icon size={14} className={color} />
-            <span className="text-[0.75rem] font-medium text-ink-secondary tracking-wide uppercase">{label}</span>
-            <span className="font-semibold text-[0.85rem] text-ink ml-auto">
-              {dim ? '—' : <>{stat.solved}<span className="text-muted text-[0.85em] font-medium ml-[1px]">/{stat.total}</span></>}
-            </span>
-          </div>
-          <MiniProgress solved={stat.solved} total={stat.total} colorClass={bar} muted={dim} />
-        </div>
-      ))}
     </div>
   );
 }
