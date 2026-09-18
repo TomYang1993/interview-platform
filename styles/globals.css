@@ -65,6 +65,7 @@
   --radius-lg: 16px;
   --radius-full: 999px;
   --transition: 0.2s ease;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   color-scheme: light;
 }
 
@@ -105,6 +106,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  overflow-x: clip;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-display), sans-serif;
@@ -670,6 +672,16 @@ code {
 }
 
 /* ─── Entrance Animations ─── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes tick-colon {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 @keyframes heroFadeUp {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }

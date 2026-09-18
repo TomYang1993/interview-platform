@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import clsx from 'clsx';
-import { DIFFICULTY_LABEL, DIFFICULTY_BADGE_CLASS, TYPE_LABEL } from '@/types/domain';
-import { Award, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { DIFFICULTY_LABEL, DIFFICULTY_TEXT_CLASS, TYPE_LABEL } from '@/types/domain';
+import { Check, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { splitCompanyTags } from '@/lib/companies';
 
 export interface QuestionRow {
   id: string;
@@ -38,81 +39,98 @@ function getPageNumbers(current: number, total: number): (number | '...')[] {
   return [1, '...', current - 1, current, current + 1, '...', total];
 }
 
-const pageBtnBase = 'h-8 w-8 flex items-center justify-center rounded-md border border-line bg-surface text-ink text-sm font-medium shadow-sm';
-const pageBtnEnabled = 'hover:bg-line-soft transition-colors';
+const label = 'font-mono text-[0.7rem] uppercase tracking-[0.08em]';
+const pageBtn =
+  'h-9 min-w-9 px-2 inline-flex items-center justify-center rounded-[6px] border border-line bg-surface text-ink font-mono text-[0.8rem] tabular-nums transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand';
+const pageBtnEnabled = 'hover:border-brand';
 const pageBtnDisabled = 'opacity-40 cursor-default';
+
+function StatusGlyph({ status, passedCount }: { status: string; passedCount: number }) {
+  if (status === 'solved') {
+    return (
+      <span className="inline-flex items-center gap-1 text-good" title={`Solved ${passedCount} time${passedCount === 1 ? '' : 's'}`}>
+        <Check size={16} strokeWidth={2.5} aria-label="Solved" />
+        {passedCount >= 2 && <span className="font-mono text-[0.7rem] tabular-nums">×{passedCount}</span>}
+      </span>
+    );
+  }
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted" aria-label={status === 'attempted' ? 'In progress' : 'Not started'}>
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray={status === 'attempted' ? '10 30' : '1.5 2.75'} strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TagRow({ tags, type }: { tags: string[]; type: string }) {
+  const { companies } = splitCompanyTags(tags);
+  if (companies.length === 0) {
+    return <span className={clsx(label, 'md:hidden block mt-2 text-muted')}>{type}</span>;
+  }
+  return (
+    <div className={clsx(label, 'flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2.5')}>
+      <span className="md:hidden text-muted">{type}</span>
+      {companies.map((c) => (
+        <span key={c} className="inline-flex items-center h-5 px-1.5 rounded-[4px] border border-line text-ink-secondary normal-case tracking-normal font-medium">
+          {c}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export function QuestionsTable({ questions, isLoggedIn, page, pageSize, totalPages, totalFiltered, onPageChange }: QuestionsTableProps) {
   return (
-    <div className="bg-surface rounded-lg border border-line shadow-sm overflow-hidden flex flex-col">
+    <div className="flex flex-col">
       <table className="w-full border-collapse text-left">
         <thead>
-          <tr className="bg-bg-subtle text-[13px] text-muted border-b border-line uppercase tracking-wider font-semibold">
-            <th className="w-[65px] max-sm:w-[48px] pr-0 py-3 text-center">Status</th>
-            <th className="w-1/4 pl-2 py-3">Challenge</th>
-            <th className="hidden sm:table-cell w-auto py-3">Description</th>
-            <th className="w-[100px] max-sm:w-[80px] py-3 text-center">Difficulty</th>
+          <tr className={clsx(label, 'text-muted border-b border-line')}>
+            <th className="w-12 py-3 pr-2 font-medium">Status</th>
+            <th className="py-3 pr-4 font-medium">Question</th>
+            <th className="hidden md:table-cell w-24 py-3 pr-4 font-medium">Type</th>
+            <th className="w-20 py-3 font-medium text-right">Level</th>
           </tr>
         </thead>
         <tbody>
           {questions.map((q) => (
-            <tr key={q.id} className={clsx("transition-colors duration-200 border-b border-line last:border-b-0 hover:bg-bg-subtle group", q.locked && "opacity-70 grayscale-[30%]")}>
+            <tr key={q.id} className={clsx('border-b border-line transition-colors duration-150 hover:bg-bg-subtle group', q.locked && 'text-muted')}>
               {/* Status */}
-              <td className="w-[65px] pr-0 py-4 text-center align-middle">
-                {isLoggedIn ? (
-                  <div className="flex items-center justify-center">
-                    {q.status === 'solved' ? (
-                      q.passedCount >= 2 ? (
-                        <div className="inline-flex items-center" title={`Solved ${q.passedCount} times`}>
-                          <Award size={18} strokeWidth={2} className="text-good drop-shadow-[0_0_3px_var(--good-subtle)] -mr-[7px] relative z-10" />
-                          <Award size={18} strokeWidth={2} className="text-good/85 drop-shadow-[0_0_3px_var(--good-subtle)]" />
-                        </div>
-                      ) : (
-                        <span title="Solved">
-                          <Award size={20} strokeWidth={2} className="text-good drop-shadow-[0_0_3px_var(--good-subtle)]" />
-                        </span>
-                      )
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-muted/45" aria-label={q.status === 'attempted' ? 'In progress' : 'Not started'}>
-                        <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" strokeDasharray="1.5 2.75" strokeLinecap="round" />
-                      </svg>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-muted/40 text-sm font-medium">—</span>
-                )}
-              </td>
-
-              {/* Title + tags + attempts */}
-              <td className="pl-2 py-4 align-top pr-4">
-                <div className="flex flex-col gap-2">
-                  <Link href={`/questions/${q.slug}`} className="font-semibold text-ink group-hover:text-brand text-[0.95rem] transition-colors flex items-center gap-2">
-                    {q.title}
-                    {q.locked && <span className="inline-flex items-center gap-[2px] bg-amber-100 text-amber-700 border border-amber-200 px-[6px] py-[1px] rounded-md text-[10px] uppercase font-bold tracking-wider ml-1 drop-shadow-sm"><Lock size={10} className="-mt-[1px]" /> Pro</span>}
-                  </Link>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="text-[10px] px-2 py-[2px] bg-brand-subtle text-brand rounded shadow-sm border border-brand/20 uppercase font-bold tracking-wider">{TYPE_LABEL[q.type] ?? q.type}</span>
-                  </div>
+              <td className="py-4 pr-2 align-top">
+                <div className="flex items-center h-6">
+                  {isLoggedIn ? <StatusGlyph status={q.status} passedCount={q.passedCount} /> : <span className="text-muted">—</span>}
                 </div>
               </td>
 
-              {/* Description */}
-              <td className="hidden sm:table-cell py-4 pr-6 align-top">
-                <span className="text-[0.88rem] text-muted leading-relaxed line-clamp-2">{q.description}</span>
+              {/* Title + description */}
+              <td className="py-4 pr-4 align-top">
+                <Link href={`/questions/${q.slug}`} className="font-semibold text-[1rem] tracking-tight text-ink group-hover:text-brand transition-colors duration-150 inline-flex items-center gap-2">
+                  {q.title}
+                  {q.locked && (
+                    <span className={clsx(label, 'inline-flex items-center gap-1 text-caution')}>
+                      <Lock size={11} aria-hidden="true" /> Pro
+                    </span>
+                  )}
+                </Link>
+                {q.description && (
+                  <p className="text-[0.88rem] text-muted leading-relaxed m-0 mt-1 line-clamp-2 max-w-[64ch]">{q.description}</p>
+                )}
+                <TagRow tags={q.tags} type={TYPE_LABEL[q.type] ?? q.type} />
+              </td>
+
+              {/* Type */}
+              <td className={clsx(label, 'hidden md:table-cell py-4 pr-4 align-top text-muted')}>
+                <span className="inline-block leading-6">{TYPE_LABEL[q.type] ?? q.type}</span>
               </td>
 
               {/* Difficulty */}
-              <td className="py-4 align-top text-center">
-                <span className={clsx('inline-flex items-center justify-center px-2 py-[0.3rem] rounded-sm text-[0.65rem] font-bold uppercase tracking-[0.05em] leading-none', DIFFICULTY_BADGE_CLASS[q.difficulty.toUpperCase()])}>
-                  {DIFFICULTY_LABEL[q.difficulty] ?? q.difficulty}
-                </span>
+              <td className={clsx(label, 'py-4 align-top text-right', DIFFICULTY_TEXT_CLASS[q.difficulty.toUpperCase()])}>
+                <span className="inline-block leading-6">{DIFFICULTY_LABEL[q.difficulty] ?? q.difficulty}</span>
               </td>
             </tr>
           ))}
 
           {questions.length === 0 && (
             <tr>
-              <td colSpan={4} className="text-center py-12 px-4 text-muted">
+              <td colSpan={4} className="py-12 text-muted border-b border-line">
                 No questions match your filters.
               </td>
             </tr>
@@ -120,11 +138,11 @@ export function QuestionsTable({ questions, isLoggedIn, page, pageSize, totalPag
         </tbody>
       </table>
 
-      <div className="flex items-center justify-between flex-wrap gap-3 px-5 py-3 border-t border-line bg-bg-subtle/50 mt-auto">
-        <span className="text-[0.85rem] text-muted font-medium">
+      <div className="flex items-center justify-between flex-wrap gap-3 py-4">
+        <span className={clsx(label, 'text-muted tabular-nums')}>
           {totalPages > 1
-            ? `Showing ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, totalFiltered)} of ${totalFiltered}`
-            : `Showing ${totalFiltered} question${totalFiltered !== 1 ? 's' : ''}`}
+            ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, totalFiltered)} of ${totalFiltered}`
+            : `${totalFiltered} question${totalFiltered !== 1 ? 's' : ''}`}
         </span>
         {totalPages > 1 && (
           <div className="flex items-center gap-1.5">
@@ -132,25 +150,21 @@ export function QuestionsTable({ questions, isLoggedIn, page, pageSize, totalPag
               type="button"
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}
-              className={clsx(pageBtnBase, page > 1 ? pageBtnEnabled : pageBtnDisabled)}
+              className={clsx(pageBtn, page > 1 ? pageBtnEnabled : pageBtnDisabled)}
               aria-label="Previous page"
             >
               <ChevronLeft size={16} />
             </button>
             {getPageNumbers(page, totalPages).map((p, i) =>
               p === '...' ? (
-                <span key={`ellipsis-${i}`} className="h-8 min-w-[32px] px-1 flex items-center justify-center text-muted text-sm">…</span>
+                <span key={`ellipsis-${i}`} className="h-9 min-w-9 inline-flex items-center justify-center text-muted font-mono text-[0.8rem]">…</span>
               ) : (
                 <button
                   type="button"
                   key={p}
                   onClick={() => onPageChange(p)}
-                  className={clsx(
-                    'h-8 min-w-[32px] px-2 flex items-center justify-center rounded-md text-sm font-semibold transition-colors shadow-sm',
-                    p === page
-                      ? 'border border-brand bg-brand text-white'
-                      : 'border border-line bg-surface text-ink hover:bg-line-soft'
-                  )}
+                  aria-current={p === page ? 'page' : undefined}
+                  className={clsx(pageBtn, p === page ? 'border-brand bg-brand text-brand-ink' : pageBtnEnabled)}
                 >
                   {p}
                 </button>
@@ -160,7 +174,7 @@ export function QuestionsTable({ questions, isLoggedIn, page, pageSize, totalPag
               type="button"
               onClick={() => onPageChange(page + 1)}
               disabled={page >= totalPages}
-              className={clsx(pageBtnBase, page < totalPages ? pageBtnEnabled : pageBtnDisabled)}
+              className={clsx(pageBtn, page < totalPages ? pageBtnEnabled : pageBtnDisabled)}
               aria-label="Next page"
             >
               <ChevronRight size={16} />
