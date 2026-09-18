@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Coffee } from "lucide-react";
+import { HomeCountdown } from "@/components/home-countdown";
 
 /* Hallmark · genre: modern-minimal · macrostructure: Split Studio · theme: Cobalt (existing tokens)
  * enrichment: none · nav: unchanged (site-header) · footer: Ft2 · studied: yes · DNA-source: url
@@ -121,9 +122,10 @@ export default function HomePage() {
           </div>
           <div className="md:col-span-6 md:pl-12 border-line max-md:border-t max-md:pt-8 md:border-l">
             <p className={`${label} mb-2`}>Time limit · {SPECIMEN.title}</p>
-            <p className="font-mono tabular-nums text-[clamp(3.5rem,10vw,6rem)] leading-none tracking-[-0.04em] text-ink m-0">
-              {SPECIMEN.minutes}:00
-            </p>
+            <HomeCountdown
+              minutes={SPECIMEN.minutes}
+              className="font-mono tabular-nums text-[clamp(3.5rem,10vw,6rem)] leading-none tracking-[-0.04em] text-ink m-0"
+            />
             <p className="text-ink-secondary text-[0.9rem] mt-3 m-0">
               Starts when you open the editor. Stops when you submit.
             </p>
