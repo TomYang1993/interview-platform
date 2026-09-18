@@ -97,25 +97,23 @@ export function HeroQuestionRotator({ questions }: { questions: HeroQuestion[] }
                 <span>{TYPE_LABEL[q.type] ?? q.type}</span>
               </div>
               <h2 className="text-[1.25rem] font-semibold tracking-tight mb-3">{q.title}</h2>
+              {q.companies.length > 0 && (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3 text-[0.95rem] font-semibold text-ink">
+                  <span className="text-ink-secondary font-normal">Asked at</span>
+                  {q.companies.map((c) => (
+                    <span key={c} className="inline-flex items-center gap-2 h-8 pl-1.5 pr-3 rounded-[6px] border border-line bg-bg">
+                      <CompanyLogo name={c} size={20} />
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
               {q.description && (
                 <p className="font-mono text-[0.8rem] leading-[1.6] text-ink-secondary m-0 line-clamp-3">{q.description}</p>
               )}
-              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <span className="inline-flex items-center gap-1 text-[0.85rem] font-medium text-ink group-hover:text-brand transition-colors duration-150">
-                  Open question <ArrowRight size={14} aria-hidden="true" />
-                </span>
-                {q.companies.length > 0 && (
-                  <span className={`${label} inline-flex items-center gap-2`}>
-                    <span>Asked at</span>
-                    {q.companies.map((c) => (
-                      <span key={c} className="inline-flex items-center gap-1.5 normal-case tracking-normal text-ink-secondary">
-                        <CompanyLogo name={c} size={14} className="rounded-[2px]" />
-                        {c}
-                      </span>
-                    ))}
-                  </span>
-                )}
-              </div>
+              <span className="mt-5 inline-flex items-center gap-1 text-[0.85rem] font-medium text-ink group-hover:text-brand transition-colors duration-150">
+                Open question <ArrowRight size={14} aria-hidden="true" />
+              </span>
             </Link>
           );
         })}
