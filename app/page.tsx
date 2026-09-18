@@ -1,199 +1,206 @@
 import Link from "next/link";
-import {
-  Atom,
-  Zap,
-  Timer,
-  ArrowRight,
-  Youtube,
-  Twitter,
-  Coffee,
-} from "lucide-react";
+import { ArrowRight, Coffee } from "lucide-react";
+
+/* Hallmark · genre: modern-minimal · macrostructure: Split Studio · theme: Cobalt (existing tokens)
+ * enrichment: none · nav: unchanged (site-header) · footer: Ft2 · studied: yes · DNA-source: url
+ * source-url: https://wtfinterview.com · observed-fonts: Space Grotesk + IBM Plex Mono
+ * pre-emit critique: P4 H4 E4 S4 R5 V4
+ */
+
+// ponytail: real seed question, mirrors prisma/seeds/js/debounce-function.ts — keep in sync by hand
+const SPECIMEN = {
+  slug: "debounce-function",
+  title: "Debounce Function",
+  difficulty: "Medium",
+  minutes: 30,
+  tier: "Free",
+  prompt:
+    "Implement debounce(fn, delay). The returned function delays calling fn until delay ms have passed since the last invocation — every new call resets the timer.",
+  starter: `function debounce(fn, delay) {
+  // your code here
+}`,
+};
+
+const LANGUAGES = [
+  ["JavaScript", "Function questions", "Node runtime, hidden test cases"],
+  ["TypeScript", "Same questions, typed", "Compiled in the browser"],
+  ["React", "Component questions", "Live preview + DOM tests"],
+  ["Python", "Function questions", "Runs in-browser via Pyodide"],
+];
+
+const label =
+  "font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted";
+const rule = "border-t border-line";
 
 export default function HomePage() {
   return (
-    <div className="w-screen ml-[calc(-50vw+50%)] -mt-8 -mb-16">
-      {/* ─── Hero ─── */}
-      <section className="relative min-h-[88vh] max-md:min-h-[72vh] flex items-center justify-center pt-32 pb-24 max-md:pt-20 max-md:pb-16 px-6 overflow-hidden">
-        {/* Decorative orbs */}
-        <div className="absolute top-[15%] left-[10%] w-[320px] h-[320px] max-md:w-[180px] max-md:h-[180px] bg-brand/10 rounded-full blur-[100px] pointer-events-none animate-pulse" />
-        <div className="absolute bottom-[20%] right-[8%] w-[280px] h-[280px] max-md:w-[160px] max-md:h-[160px] bg-purple-500/8 rounded-full blur-[90px] pointer-events-none animate-pulse [animation-delay:1s]" />
-        <div className="relative z-10 text-center max-w-[820px]">
-          <h1 className="text-[clamp(2rem,10vw,3.2rem)] md:text-[clamp(2.8rem,7.5vw,5rem)] font-extrabold leading-[1.05] tracking-tight mb-7">
-            Ace Your <br />
-            <span className="bg-gradient-to-r from-brand to-blue-400 dark:to-blue-300 focus-mode:from-[#d4a054] focus-mode:to-[#e8c48a] bg-clip-text text-transparent">
-              Fullstack Interview
-            </span>
+    <div className="w-screen ml-[calc(-50vw+50%)] -mt-8 -mb-16 overflow-x-clip">
+      {/* ─── 1 · Hero diptych — title left, real question right ─── */}
+      <section className="max-w-[1120px] mx-auto px-6 max-md:px-4 pt-24 pb-20 max-md:pt-14 max-md:pb-12 grid md:grid-cols-12 gap-12 max-md:gap-10 items-center">
+        <div className="md:col-span-7">
+          <p className={`${label} mb-5`}>Fullstack interview practice</p>
+          <h1 className="text-[clamp(2.25rem,8vw,3rem)] md:text-[clamp(3rem,5.5vw,4.5rem)] font-bold leading-[1.02] tracking-[-0.03em] mb-6 [overflow-wrap:anywhere]">
+            Whack the fullstack interview.
           </h1>
-
-          <p className="text-ink-secondary max-w-[580px] mx-auto mb-11 text-[1.08rem] leading-[1.75]">
-            Curated questions cover most aspects of fullstack tech screening
-            questions. Questions are updated regularly to keep up with current
-            trends in the job market. Completely free — and if you&apos;re
-            feeling generous,{" "}
+          <p className="text-ink-secondary text-[1.05rem] max-md:text-base leading-[1.65] max-w-[52ch] mb-9">
+            JS/TS function questions, React component questions, Python —
+            adapted from real tech screens, solved in your browser, on a
+            clock. Completely free. If it helps,{" "}
             <Link
               href="/coffee"
-              className="inline-flex items-center gap-1 align-baseline text-brand underline underline-offset-2 font-semibold hover:text-brand-hover transition-colors group/coffee"
+              className="inline-flex items-center gap-1 align-baseline text-ink underline decoration-line underline-offset-4 decoration-1 hover:decoration-brand transition-[text-decoration-color] duration-150"
             >
-              <Coffee
-                size={16}
-                className="shrink-0 transition-transform group-hover/coffee:-rotate-12"
-                aria-hidden="true"
-              />
+              <Coffee size={15} aria-hidden="true" className="shrink-0" />
               buy me a coffee
             </Link>
-            !
+            .
           </p>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              href="/questions"
-              className="inline-flex items-center gap-2 bg-gradient-to-br from-brand to-accent-secondary text-white py-[0.9rem] px-[2.2rem] rounded-[12px] font-bold text-[0.95rem] tracking-tight transition-all duration-200 shadow-[0_4px_24px_color-mix(in_srgb,var(--brand)_25%,transparent)] hover:-translate-y-[2px] hover:shadow-[0_8px_32px_color-mix(in_srgb,var(--brand)_30%,transparent)] hover:brightness-105 active:translate-y-0 active:scale-[0.98]"
-            >
-              Start Practicing
-              <ArrowRight size={16} />
-            </Link>
-          </div>
+          <Link
+            href="/questions"
+            className="inline-flex items-center gap-2 bg-brand text-brand-ink font-semibold text-[0.95rem] px-5 py-3 min-h-11 rounded-[6px] whitespace-nowrap hover:bg-brand-hover transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            Start practicing
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
         </div>
-      </section>
 
-      {/* ─── What You'll Master — Bento Grid ─── */}
-      <section className="py-24 px-8 max-md:py-16 max-md:px-5 max-w-[1200px] mx-auto">
-        <div className="mb-12">
-          <h2 className="text-[2rem] font-extrabold tracking-tight mb-2">
-            Built for the Interviews You&apos;ll Actually Face
+        <Link
+          href={`/questions/${SPECIMEN.slug}`}
+          className="md:col-span-5 block border border-line rounded-[10px] bg-surface p-5 hover:border-brand transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand group"
+        >
+          <div className={`${label} flex flex-wrap gap-x-4 gap-y-1 mb-4`}>
+            <span className="text-brand">{SPECIMEN.tier}</span>
+            <span>{SPECIMEN.difficulty}</span>
+            <span className="tabular-nums">{SPECIMEN.minutes} min</span>
+            <span>JS · TS</span>
+          </div>
+          <h2 className="text-[1.25rem] font-semibold tracking-tight mb-3">
+            {SPECIMEN.title}
           </h2>
-          <div className="w-12 h-[3px] bg-brand rounded-[2px]" />
-        </div>
+          <p className="font-mono text-[0.8rem] leading-[1.6] text-ink-secondary m-0">
+            {SPECIMEN.prompt}
+          </p>
+          <span className="mt-5 inline-flex items-center gap-1 text-[0.85rem] font-medium text-ink group-hover:text-brand transition-colors duration-150">
+            Open question <ArrowRight size={14} aria-hidden="true" />
+          </span>
+        </Link>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          {/* React — large card */}
-          <div className="bg-surface border border-line rounded-xl p-8 max-md:p-6 relative overflow-hidden md:col-span-8 transition-all duration-300 hover:border-brand/30 hover:-translate-y-1 hover:shadow-md group">
-            <span className="flex items-center justify-center w-11 h-11 rounded-[10px] mb-5 bg-brand-subtle text-brand">
-              <Atom size={24} />
-            </span>
-            <h3 className="text-[1.25rem] font-bold mb-2 tracking-tight">
-              Questions from Real Interviews
-            </h3>
-            <p className="text-ink-secondary leading-[1.65] m-0 text-[0.92rem]">
-              Every question is adapted from real interview rounds. No
-              LeetCode-style puzzles here: we focus on what tech screens
-              actually test, and update the question bank as the market shifts.
+      {/* ─── 2 · Diptych, proof left — the editor ─── */}
+      <section className={`${rule}`}>
+        <div className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-20 max-md:py-12 grid md:grid-cols-12 gap-12 max-md:gap-8 items-center">
+          <figure className="md:col-span-6 md:order-1 max-md:order-2 m-0 border border-line rounded-[10px] bg-surface overflow-hidden">
+            <figcaption className={`${label} px-4 py-2.5 border-b border-line`}>
+              {SPECIMEN.slug}.js
+            </figcaption>
+            <pre className="m-0 p-4 font-mono text-[0.85rem] leading-[1.6] text-ink overflow-x-auto">
+              <code>{SPECIMEN.starter}</code>
+            </pre>
+            <div className={`${label} px-4 py-2.5 border-t border-line`}>
+              Run tests · hidden cases checked on submit
+            </div>
+          </figure>
+          <div className="md:col-span-6 md:order-2 max-md:order-1">
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.1] tracking-[-0.02em] mb-4">
+              Solve it right here.
+            </h2>
+            <p className="text-ink-secondary leading-[1.65] max-w-[48ch] m-0">
+              Every question ships with starter code, a full editor, and a
+              test runner. No setup — open a question and start typing.
+              Submit to run the hidden tests and get a verdict.
             </p>
-            <div className="absolute -right-10 -bottom-10 w-[200px] h-[200px] bg-brand-subtle rounded-full blur-[60px] pointer-events-none opacity-60 transition-all duration-500 group-hover:opacity-100 group-hover:scale-110" />
-          </div>
-
-          {/* JS/TS Logic */}
-          <div className="bg-surface border border-line rounded-xl p-8 max-md:p-6 relative overflow-hidden md:col-span-4 transition-all duration-300 hover:border-brand/30 hover:-translate-y-1 hover:shadow-md group">
-            <span className="flex items-center justify-center w-11 h-11 rounded-[10px] mb-5 bg-accent-secondary/12 text-accent-secondary">
-              <Zap size={24} />
-            </span>
-            <h3 className="text-[1.25rem] font-bold mb-2 tracking-tight">
-              Solve Right in the Browser
-            </h3>
-            <p className="text-ink-secondary leading-[1.65] m-0 text-[0.92rem]">
-              Full editor, live test runner, instant feedback. Open a question
-              and start coding.
-            </p>
-          </div>
-
-          <div className="bg-surface border border-line rounded-xl p-8 max-md:p-6 relative overflow-hidden md:col-span-4 transition-all duration-300 hover:border-brand/30 hover:-translate-y-1 hover:shadow-md group">
-            <span className="flex items-center justify-center w-11 h-11 rounded-[10px] mb-5 bg-accent-tertiary/12 text-accent-tertiary">
-              <Timer size={24} />
-            </span>
-            <h3 className="text-[1.25rem] font-bold mb-2 tracking-tight">
-              Practice Under Real Pressure
-            </h3>
-            <p className="text-ink-secondary leading-[1.65] m-0 text-[0.92rem]">
-              Real interviews put you on the clock, so we do too. Actual time
-              limits is enforced, the pressure most platforms skip.
-            </p>
-          </div>
-
-          {/* Supported languages — wide */}
-          <div className="bg-surface border border-line rounded-xl p-8 max-md:p-6 relative overflow-hidden md:col-span-8 transition-all duration-300 hover:border-brand/30 hover:shadow-md group flex items-center justify-evenly flex-wrap">
-            <h3 className="w-full text-center text-[1rem] font-semibold text-muted mb-3 tracking-wide">
-              Supported Languages and Frameworks
-            </h3>
-            <div className="text-center flex-1 max-sm:min-w-[40%]">
-              <span className="block text-[1.3rem] font-extrabold tracking-tight bg-gradient-to-br from-ink to-muted bg-clip-text text-transparent">
-                JavaScript
-              </span>
-            </div>
-            <div className="w-[1px] h-6 bg-line shrink-0 max-sm:hidden" />
-            <div className="text-center flex-1 max-sm:min-w-[40%]">
-              <span className="block text-[1.3rem] font-extrabold tracking-tight bg-gradient-to-br from-ink to-muted bg-clip-text text-transparent">
-                TypeScript
-              </span>
-            </div>
-            <div className="w-[1px] h-6 bg-line shrink-0 max-sm:hidden" />
-            <div className="text-center flex-1 max-sm:min-w-[40%]">
-              <span className="block text-[1.3rem] font-extrabold tracking-tight bg-gradient-to-br from-ink to-muted bg-clip-text text-transparent">
-                React
-              </span>
-            </div>
-            <div className="w-[1px] h-6 bg-line shrink-0 max-sm:hidden" />
-            <div className="text-center flex-1 max-sm:min-w-[40%]">
-              <span className="block text-[1.3rem] font-extrabold tracking-tight bg-gradient-to-br from-ink to-muted bg-clip-text text-transparent">
-                Python
-              </span>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── Footer ─── */}
-      <footer className="border-t border-line bg-bg focus-mode:bg-[#15140f] py-14 px-8 mt-12">
-        <div className="max-w-[1200px] mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.8fr_repeat(3,1fr)] gap-8">
-          <div>
-            <p className="text-[0.7rem] font-bold text-ink tracking-tight mb-2">
-              Whack The Fullstack Interview
-            </p>
-            <p className="text-[0.72rem] text-muted leading-[1.6] m-0">
-              &copy; {new Date().getFullYear()} Whack The Fullstack Interview.
-              Built for engineers, by engineers.
+      {/* ─── 3 · Diptych, text left — the clock ─── */}
+      <section className={`${rule} bg-surface`}>
+        <div className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-20 max-md:py-12 grid md:grid-cols-12 gap-12 max-md:gap-8 items-center">
+          <div className="md:col-span-6">
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.1] tracking-[-0.02em] mb-4">
+              On the clock, like the real thing.
+            </h2>
+            <p className="text-ink-secondary leading-[1.65] max-w-[48ch] m-0">
+              Every question is adapted from an actual interview round, not a
+              LeetCode puzzle. Tech screens put you on a timer, so each
+              question has a time limit and it&apos;s enforced.
             </p>
           </div>
-          <div className="flex flex-col gap-2">
-            <h5 className="text-[0.65rem] font-bold uppercase tracking-widest text-ink-secondary m-0 mb-1">
-              Platform
-            </h5>
-            <Link
-              href="/questions"
-              className="text-[0.8rem] text-muted transition-colors hover:text-brand"
-            >
-              Questions
-            </Link>
+          <div className="md:col-span-6 md:pl-12 border-line max-md:border-t max-md:pt-8 md:border-l">
+            <p className={`${label} mb-2`}>Time limit · {SPECIMEN.title}</p>
+            <p className="font-mono tabular-nums text-[clamp(3.5rem,10vw,6rem)] leading-none tracking-[-0.04em] text-ink m-0">
+              {SPECIMEN.minutes}:00
+            </p>
+            <p className="text-ink-secondary text-[0.9rem] mt-3 m-0">
+              Starts when you open the editor. Stops when you submit.
+            </p>
           </div>
-          <div className="flex flex-col gap-2">
-            <h5 className="text-[0.65rem] font-bold uppercase tracking-widest text-ink-secondary m-0 mb-1">
-              Legal
-            </h5>
+        </div>
+      </section>
+
+      {/* ─── 4 · Spec sheet — languages ─── */}
+      <section className={rule}>
+        <div className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-20 max-md:py-12">
+          <p className={`${label} mb-6`}>Languages and frameworks</p>
+          <dl className="m-0">
+            {LANGUAGES.map(([name, kind, note]) => (
+              <div
+                key={name}
+                className="grid md:grid-cols-12 gap-x-6 gap-y-1 py-4 border-t border-line last:border-b"
+              >
+                <dt className="md:col-span-3 text-[1.15rem] font-semibold tracking-tight">
+                  {name}
+                </dt>
+                <dd className="md:col-span-4 m-0 text-ink-secondary">
+                  {kind}
+                </dd>
+                <dd className="md:col-span-5 m-0 text-muted text-[0.9rem]">
+                  {note}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      {/* ─── 5 · Closing line ─── */}
+      <section className={rule}>
+        <div className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-20 max-md:py-12 flex max-md:flex-col md:items-center justify-between gap-6">
+          <p className="text-[clamp(1.5rem,3vw,2rem)] font-bold tracking-[-0.02em] leading-[1.15] max-w-[24ch] m-0">
+            Pick a question. Beat the clock.
+          </p>
+          <Link
+            href="/questions"
+            className="inline-flex items-center gap-2 border border-ink text-ink font-semibold text-[0.95rem] px-5 py-3 min-h-11 rounded-[6px] whitespace-nowrap self-start md:self-auto hover:bg-ink hover:text-bg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            Browse questions
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
+      </section>
+
+      {/* ─── Footer · Ft2 inline single line ─── */}
+      <footer className={`${rule} bg-bg`}>
+        <div className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-8 flex flex-wrap items-baseline gap-x-6 gap-y-2 text-[0.8rem] text-muted">
+          <span className="font-semibold text-ink">
+            Whack The Fullstack Interview
+          </span>
+          <span>Built for engineers, by engineers.</span>
+          <span className="tabular-nums">&copy; {new Date().getFullYear()}</span>
+          <span className="flex gap-5 md:ml-auto">
             <Link
               href="/terms"
-              className="text-[0.8rem] text-muted transition-colors hover:text-brand"
+              className="inline-flex items-center py-2 whitespace-nowrap hover:text-ink transition-colors duration-150"
             >
-              Terms of Service
+              Terms
             </Link>
             <Link
               href="/privacy"
-              className="text-[0.8rem] text-muted transition-colors hover:text-brand"
+              className="inline-flex items-center py-2 whitespace-nowrap hover:text-ink transition-colors duration-150"
             >
-              Privacy Policy
+              Privacy
             </Link>
-          </div>
-          <div className="flex flex-col gap-2">
-            <h5 className="text-[0.65rem] font-bold uppercase tracking-widest text-ink-secondary m-0 mb-1">
-              Connect(In Planning)
-            </h5>
-            <div className="flex gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-sm bg-surface border border-line text-muted cursor-pointer transition-all hover:text-brand hover:border-brand hover:bg-brand-subtle">
-                <Youtube size={18} />
-              </span>
-              <span className="flex items-center justify-center w-8 h-8 rounded-sm bg-surface border border-line text-muted cursor-pointer transition-all hover:text-brand hover:border-brand hover:bg-brand-subtle">
-                <Twitter size={18} />
-              </span>
-            </div>
-          </div>
+          </span>
         </div>
       </footer>
     </div>
