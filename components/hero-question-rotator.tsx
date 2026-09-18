@@ -101,9 +101,8 @@ export function HeroQuestionRotator({ questions }: { questions: HeroQuestion[] }
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3 text-[0.95rem] font-semibold text-ink">
                   <span className="text-ink-secondary font-normal">Asked at</span>
                   {q.companies.map((c) => (
-                    <span key={c} className="inline-flex items-center gap-2 h-8 pl-1.5 pr-3 rounded-[6px] border border-line bg-bg">
-                      <CompanyLogo name={c} size={20} />
-                      {c}
+                    <span key={c} title={c} aria-label={c} className="inline-flex items-center justify-center h-9 min-w-9 px-2 rounded-[6px] border border-line bg-bg">
+                      <CompanyLogo name={c} size={24} />
                     </span>
                   ))}
                 </div>
