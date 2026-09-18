@@ -49,7 +49,7 @@ export function QuestionsStatsBar({
   const dim = !isLoggedIn;
 
   return (
-    <div className="grid md:grid-cols-12 gap-x-12 gap-y-6 py-6 border-y border-line">
+    <div className="grid md:grid-cols-12 gap-x-12 gap-y-6 pt-2 pb-6 border-b border-line">
       <div className="md:col-span-4 flex gap-10">
         <div>
           <p className={`${label} mb-1`}>Solved</p>
