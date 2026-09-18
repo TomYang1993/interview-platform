@@ -63,8 +63,11 @@ function StatusGlyph({ status, passedCount }: { status: string; passedCount: num
 
 function TagRow({ tags, type }: { tags: string[]; type: string }) {
   const { companies } = splitCompanyTags(tags);
+  if (companies.length === 0) {
+    return <span className={clsx(label, 'md:hidden block mt-2 text-muted')}>{type}</span>;
+  }
   return (
-    <div className={clsx(label, 'flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2.5 empty:hidden')}>
+    <div className={clsx(label, 'flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2.5')}>
       <span className="md:hidden text-muted">{type}</span>
       {companies.map((c) => (
         <span key={c} className="inline-flex items-center h-5 px-1.5 rounded-[4px] border border-line text-ink-secondary normal-case tracking-normal font-medium">
