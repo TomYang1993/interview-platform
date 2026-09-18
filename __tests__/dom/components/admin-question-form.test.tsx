@@ -126,7 +126,7 @@ describe('<AdminQuestionForm />', () => {
   it('serializes comma-separated tags into array, trimmed and non-empty', async () => {
     render(<AdminQuestionForm />);
     fillRequired();
-    fireEvent.change(screen.getByPlaceholderText('tags (comma-separated)'), {
+    fireEvent.change(screen.getByLabelText('Topic tags'), {
       target: { value: ' arrays , two-pointer ,  , hash ' }
     });
     fireEvent.click(screen.getByRole('button', { name: /Create question/i }));

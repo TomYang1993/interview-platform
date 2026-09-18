@@ -18,6 +18,7 @@ export async function listPublishedQuestions(userId?: string) {
       ...question,
       description: rd?.description ?? null,
       tags: rd?.tags ?? [],
+      companies: rd?.companies ?? [],
       locked: !canAccessQuestion(question.accessTier, question.id, entitlement)
     };
   });
@@ -40,6 +41,7 @@ export async function getQuestionDetailBySlug(slug: string, userId?: string) {
   return {
     ...question,
     tags: rd?.tags ?? [],
+    companies: rd?.companies ?? [],
     starterCode: rd?.starterCode,
     publicTestCode: question.publicTestCode ?? rd?.publicTestCode ?? null,
     packId: rd?.packId ?? null,

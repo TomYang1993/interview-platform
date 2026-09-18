@@ -4,7 +4,6 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import { DIFFICULTY_LABEL, DIFFICULTY_TEXT_CLASS, TYPE_LABEL } from '@/types/domain';
 import { Check, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
-import { splitCompanyTags } from '@/lib/companies';
 
 export interface QuestionRow {
   id: string;
@@ -15,6 +14,8 @@ export interface QuestionRow {
   type: string;
   accessTier: string;
   tags: string[];
+  /** Company names the question was asked at */
+  companies: string[];
   locked: boolean;
   /** 'solved' | 'attempted' | 'unattempted' */
   status: string;
@@ -61,8 +62,7 @@ function StatusGlyph({ status, passedCount }: { status: string; passedCount: num
   );
 }
 
-function TagRow({ tags, type }: { tags: string[]; type: string }) {
-  const { companies } = splitCompanyTags(tags);
+function CompanyRow({ companies, type }: { companies: string[]; type: string }) {
   if (companies.length === 0) {
     return <span className={clsx(label, 'md:hidden block mt-2 text-muted')}>{type}</span>;
   }
@@ -113,7 +113,7 @@ export function QuestionsTable({ questions, isLoggedIn, page, pageSize, totalPag
                 {q.description && (
                   <p className="text-[0.88rem] text-muted leading-relaxed m-0 mt-1 line-clamp-2 max-w-[64ch]">{q.description}</p>
                 )}
-                <TagRow tags={q.tags} type={TYPE_LABEL[q.type] ?? q.type} />
+                <CompanyRow companies={q.companies} type={TYPE_LABEL[q.type] ?? q.type} />
               </td>
 
               {/* Type */}

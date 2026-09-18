@@ -29,6 +29,7 @@ export interface QuestionInitialValues {
   prompt: string;
   description: string;
   tags: string[];
+  companies: string[];
   starterCode: string;
   starterCodeTs?: string;
   type: QuestionType;
@@ -52,6 +53,7 @@ export function AdminQuestionForm({ initial }: Props) {
   const [prompt, setPrompt] = useState(initial?.prompt ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [tags, setTags] = useState(initial?.tags.join(', ') ?? '');
+  const [companies, setCompanies] = useState(initial?.companies.join(', ') ?? '');
   const [starterCode, setStarterCode] = useState(initial?.starterCode ?? defaultStarterJs);
   const [starterCodeTs, setStarterCodeTs] = useState(initial?.starterCodeTs ?? '');
   const [type, setType] = useState<QuestionType>(initial?.type ?? 'FUNCTION_JS');
@@ -75,10 +77,9 @@ export function AdminQuestionForm({ initial }: Props) {
       starterCodeMap.typescript = starterCodeTs;
     }
 
-    const tagList = tags
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter(Boolean);
+    const splitList = (value: string) => value.split(',').map((v) => v.trim()).filter(Boolean);
+    const tagList = splitList(tags);
+    const companyList = splitList(companies);
 
     const body: Record<string, unknown> = {
       slug,
@@ -90,6 +91,7 @@ export function AdminQuestionForm({ initial }: Props) {
       isPublished,
       timeLimitMinutes,
       tags: tagList,
+      companies: companyList,
       content: { description },
       starterCode: starterCodeMap,
     };
@@ -123,6 +125,7 @@ export function AdminQuestionForm({ initial }: Props) {
         setPrompt('');
         setDescription('');
         setTags('');
+        setCompanies('');
       }
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Failed');
@@ -157,11 +160,20 @@ export function AdminQuestionForm({ initial }: Props) {
           className="w-full"
         />
       </label>
-      <input
-        value={tags}
-        onChange={(e) => setTags(e.target.value)}
-        placeholder="tags (comma-separated)"
-      />
+      <div className="grid-two">
+        <input
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="topic tags (comma-separated)"
+          aria-label="Topic tags"
+        />
+        <input
+          value={companies}
+          onChange={(e) => setCompanies(e.target.value)}
+          placeholder="companies asked at (comma-separated, e.g. Visa, Stripe)"
+          aria-label="Companies"
+        />
+      </div>
       <div className="grid-two">
         <label>
           Type

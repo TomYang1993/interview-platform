@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, Coffee } from "lucide-react";
 import { HomeCountdown } from "@/components/home-countdown";
-import { COMPANIES } from "@/lib/companies";
+import { prisma } from "@/lib/db/prisma";
+import { listCompanyTags } from "@/lib/question-tags";
 
 /* Hallmark · genre: modern-minimal · macrostructure: Split Studio · theme: Cobalt (existing tokens)
  * enrichment: none · nav: unchanged (site-header) · footer: Ft2 · studied: yes · DNA-source: url
@@ -27,7 +28,9 @@ const label =
   "font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted";
 const rule = "border-t border-line";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const companies = (await listCompanyTags(prisma)).map((t) => t.name);
+
   return (
     <div className="w-screen ml-[calc(-50vw+50%)] -mt-8 -mb-16 overflow-x-clip">
       {/* ─── 1 · Hero diptych — title left, real question right ─── */}
@@ -82,17 +85,18 @@ export default function HomePage() {
       </section>
 
       {/* ─── Wordmark marquee — where the questions come from ─── */}
+      {companies.length > 0 && (
       <section className={`${rule} py-10 max-md:py-8`}>
         <p className={`${label} max-w-[1120px] mx-auto px-6 max-md:px-4 mb-6`}>
           Adapted from interview rounds at
         </p>
         <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)] motion-reduce:[mask-image:none]">
           <ul className="flex w-max gap-x-12 m-0 p-0 list-none animate-[marquee_60s_linear_infinite] hover:[animation-play-state:paused] motion-reduce:animate-none motion-reduce:w-auto motion-reduce:flex-wrap motion-reduce:gap-y-3 motion-reduce:max-w-[1120px] motion-reduce:mx-auto motion-reduce:px-6 max-md:motion-reduce:px-4">
-            {[...COMPANIES, ...COMPANIES].map((name, i) => (
+            {[...companies, ...companies].map((name, i) => (
               <li
                 key={`${name}-${i}`}
-                aria-hidden={i >= COMPANIES.length || undefined}
-                className={`text-[1.35rem] font-semibold tracking-[-0.02em] text-muted whitespace-nowrap${i >= COMPANIES.length ? " motion-reduce:hidden" : ""}`}
+                aria-hidden={i >= companies.length || undefined}
+                className={`text-[1.35rem] font-semibold tracking-[-0.02em] text-muted whitespace-nowrap${i >= companies.length ? " motion-reduce:hidden" : ""}`}
               >
                 {name}
               </li>
@@ -100,6 +104,7 @@ export default function HomePage() {
           </ul>
         </div>
       </section>
+      )}
 
       {/* ─── 2 · Diptych, proof left — the editor ─── */}
       <section className={`${rule}`}>

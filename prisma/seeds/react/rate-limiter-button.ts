@@ -213,6 +213,7 @@ export const rateLimiterButton: SeedQuestion = {
   accessTier: AccessTier.FREE,
   timeLimitMinutes: 45,
   tags: ['react', 'hooks', 'timers', 'state'],
+  companies: ['Visa'],
   starterCode: {
     react: STARTER_CODE_REACT,
     reactTypescript: STARTER_CODE_REACT_TS,
