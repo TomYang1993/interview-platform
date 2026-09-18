@@ -8,7 +8,10 @@ import { prisma } from '@/lib/db/prisma';
  */
 export interface QuestionRenderData {
   description: string | null;
+  /** Topic tags (kind TOPIC). */
   tags: string[];
+  /** Companies the question was asked at (kind COMPANY). */
+  companies: string[];
   starterCode: Record<string, string>;
   publicTestCode: string | null;
   packId: string | null;
@@ -41,7 +44,8 @@ export async function buildQuestionRenderData(questionId: string): Promise<Quest
 
   return {
     description: versionContent?.description ?? null,
-    tags: tagLinks.map((l) => l.tag.name),
+    tags: tagLinks.filter((l) => l.tag.kind !== 'COMPANY').map((l) => l.tag.name),
+    companies: tagLinks.filter((l) => l.tag.kind === 'COMPANY').map((l) => l.tag.name),
     starterCode: (latestVersion?.starterCode ?? {}) as Record<string, string>,
     publicTestCode: question?.publicTestCode ?? null,
     packId: packLink?.packId ?? null,

@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db/prisma';
 import { authorizeAdmin } from '@/lib/auth/current-user';
 import { badRequest, notFound } from '@/lib/api';
 import { refreshQuestionRenderData } from '@/lib/questions-snapshot';
+import { ensureTagIds } from '@/lib/question-tags';
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -41,6 +42,7 @@ const patchSchema = z.object({
   isPublished: z.boolean().optional(),
   timeLimitMinutes: z.number().int().positive().optional(),
   tags: z.array(z.string()).optional(),
+  companies: z.array(z.string()).optional(),
   content: z.record(z.unknown()).optional(),
   starterCode: z.record(z.string()).optional(),
   publicTestCode: z.string().optional(),
@@ -104,21 +106,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       });
     }
 
-    if (data.tags !== undefined) {
-      const tagIds = await Promise.all(
-        data.tags.map(async (name) => {
-          const tag = await tx.questionTag.upsert({
-            where: { name },
-            update: {},
-            create: { name }
-          });
-          return tag.id;
-        })
-      );
-      await tx.questionTagOnQuestion.deleteMany({ where: { questionId: id } });
+    // Each kind is replaced independently, so a payload with only `companies`
+    // leaves the topic tags untouched (and vice versa).
+    for (const [names, kind] of [
+      [data.tags, 'TOPIC'],
+      [data.companies, 'COMPANY'],
+    ] as const) {
+      if (names === undefined) continue;
+      const tagIds = await ensureTagIds(tx, names, kind);
+      await tx.questionTagOnQuestion.deleteMany({ where: { questionId: id, tag: { kind } } });
       if (tagIds.length) {
         await tx.questionTagOnQuestion.createMany({
-          data: tagIds.map((tagId) => ({ questionId: id, tagId }))
+          data: tagIds.map((tagId) => ({ questionId: id, tagId })),
+          skipDuplicates: true,
         });
       }
     }
