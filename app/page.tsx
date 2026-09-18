@@ -27,17 +27,6 @@ export default async function HomePage() {
 
   return (
     <div className="w-screen ml-[calc(-50vw+50%)] -mt-8 -mb-16 overflow-x-clip">
-      {/* ─── Notice strip ─── */}
-      <div className="border-b border-line bg-surface">
-        <p className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-2.5 m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.85rem] text-ink-secondary">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand shrink-0 animate-[breathe_2.4s_ease-in-out_infinite] motion-reduce:animate-none" aria-hidden="true" />
-          <span>New questions are coming in — the bank keeps growing.</span>
-          <Link href="/questions" className="font-medium text-ink hover:text-brand transition-colors duration-150 whitespace-nowrap">
-            See what&apos;s new →
-          </Link>
-        </p>
-      </div>
-
       {/* ─── 1 · Hero diptych — title left, real question right ─── */}
       <section className="max-w-[1120px] mx-auto px-6 max-md:px-4 pt-24 pb-20 max-md:pt-14 max-md:pb-12 grid md:grid-cols-12 gap-12 max-md:gap-10 items-center">
         <div className="md:col-span-7">
