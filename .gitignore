@@ -20,3 +20,5 @@ SECURITY_AUDIT.md
 PRODUCTION_MIGRATION_PLAN.md
 
 prisma/seeds/archive/
+.vercel
+.env*

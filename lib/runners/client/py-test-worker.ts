@@ -94,7 +94,7 @@ for case in cases:
     except Exception as e:
         result["runtimeMs"] = int((time.perf_counter() - start) * 1000)
         result["error"] = f"{type(e).__name__}: {e}"
-    print(json.dumps(result))
+    print("__RESULT__:" + json.dumps(result))
 `.trimStart();
 
 self.onmessage = async (e: MessageEvent<RunMessage>) => {
@@ -127,17 +127,17 @@ self.onmessage = async (e: MessageEvent<RunMessage>) => {
         loadError = trimmed.slice('__LOAD_ERROR__:'.length);
         continue;
       }
-      try {
-        const parsed = JSON.parse(trimmed) as {
-          name: string;
-          passed: boolean;
-          error?: string;
-        };
-        results.push({ name: parsed.name, passed: parsed.passed, error: parsed.error });
-      } catch {
-        // non-JSON stdout → logs
+      if (!trimmed.startsWith('__RESULT__:')) {
+        // user print() output → logs (even if it happens to be valid JSON)
         stderrLines.push(trimmed);
+        continue;
       }
+      const parsed = JSON.parse(trimmed.slice('__RESULT__:'.length)) as {
+        name: string;
+        passed: boolean;
+        error?: string;
+      };
+      results.push({ name: parsed.name, passed: parsed.passed, error: parsed.error });
     }
 
     if (loadError) {
