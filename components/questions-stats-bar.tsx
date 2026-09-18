@@ -1,3 +1,6 @@
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+
 /* Hallmark · genre: modern-minimal · macrostructure: Index-First · theme: Cobalt (existing tokens) · designed-as-app */
 
 interface CategoryStat {
@@ -48,6 +51,20 @@ export function QuestionsStatsBar({
 }: QuestionsStatsBarProps) {
   const dim = !isLoggedIn;
 
+  if (dim) {
+    return (
+      <div className="pt-2 pb-6 border-b border-line flex flex-wrap items-baseline gap-x-4 gap-y-2">
+        <p className="text-ink text-[1rem] m-0">Sign in to track solved questions and your streak.</p>
+        <Link
+          href="/auth"
+          className="inline-flex items-center gap-1 text-[0.95rem] font-medium text-brand hover:underline underline-offset-4 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          Sign in <ArrowRight size={14} aria-hidden="true" />
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="grid md:grid-cols-12 gap-x-12 gap-y-6 pt-2 pb-6 border-b border-line">
       <div className="md:col-span-4 flex gap-10">
@@ -69,11 +86,6 @@ export function QuestionsStatsBar({
         <Readout name="UI" solved={ui.solved} total={ui.total} dim={dim} />
         <Readout name="Backend" solved={backend.solved} total={backend.total} dim={dim} />
       </div>
-      {dim && (
-        <p className="md:col-span-12 text-[0.85rem] text-muted m-0">
-          Sign in to track solved questions and your streak.
-        </p>
-      )}
     </div>
   );
 }
