@@ -53,7 +53,7 @@ export function QuestionsStatsBar({
 
   if (dim) {
     return (
-      <div className="pt-2 pb-6 border-b border-line flex flex-wrap items-baseline gap-x-4 gap-y-2">
+      <div className="pb-6 border-b border-line flex flex-wrap items-baseline gap-x-4 gap-y-2">
         <p className="text-ink text-[1rem] m-0">Sign in to track solved questions and your streak.</p>
         <Link
           href="/auth"
@@ -66,7 +66,7 @@ export function QuestionsStatsBar({
   }
 
   return (
-    <div className="grid md:grid-cols-12 gap-x-12 gap-y-6 pt-2 pb-6 border-b border-line">
+    <div className="grid md:grid-cols-12 gap-x-12 gap-y-6 pb-6 border-b border-line">
       <div className="md:col-span-4 flex gap-10">
         <div>
           <p className={`${label} mb-1`}>Solved</p>

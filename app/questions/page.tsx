@@ -77,7 +77,7 @@ export default async function QuestionsPage({ searchParams: searchParamsPromise 
 
   return (
     <div className="max-w-[1120px] mx-auto px-4 sm:px-6">
-      <div className="grid gap-6 py-8 max-md:py-4">
+      <div className="grid gap-6 pb-8 max-md:pb-4">
         <QuestionsStatsBar
           isLoggedIn={!!user}
           streak={streak}
