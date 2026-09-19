@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { ArrowRight, Coffee } from "lucide-react";
 import { HomeCountdown } from "@/components/home-countdown";
-import { COMPANIES } from "@/lib/companies";
+import { prisma } from "@/lib/db/prisma";
+import { listCompanyTags } from "@/lib/question-tags";
+import { listHeroQuestions } from "@/lib/questions";
+import { HeroQuestionRotator } from "@/components/hero-question-rotator";
+import { SolveDemo } from "@/components/solve-demo";
+import { CompanyLogo } from "@/components/company-logo";
 
 /* Hallmark · genre: modern-minimal · macrostructure: Split Studio · theme: Cobalt (existing tokens)
  * enrichment: none · nav: unchanged (site-header) · footer: Ft2 · studied: yes · DNA-source: url
@@ -9,25 +14,17 @@ import { COMPANIES } from "@/lib/companies";
  * pre-emit critique: P4 H4 E4 S4 R5 V4
  */
 
-// ponytail: real seed question, mirrors prisma/seeds/js/debounce-function.ts — keep in sync by hand
-const SPECIMEN = {
-  slug: "debounce-function",
-  title: "Debounce Function",
-  difficulty: "Medium",
-  minutes: 30,
-  tier: "Free",
-  prompt:
-    "Implement debounce(fn, delay). The returned function delays calling fn until delay ms have passed since the last invocation — every new call resets the timer.",
-  starter: `function debounce(fn, delay) {
-  // your code here
-}`,
-};
+// ponytail: mirrors prisma/seeds/python/web-crawler.ts — the question the solve demo plays back
+const SPECIMEN = { title: "Web Crawler", minutes: 30 };
 
 const label =
   "font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted";
 const rule = "border-t border-line";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [companyTags, heroQuestions] = await Promise.all([listCompanyTags(prisma), listHeroQuestions()]);
+  const companies = companyTags.map((t) => t.name);
+
   return (
     <div className="w-screen ml-[calc(-50vw+50%)] -mt-8 -mb-16 overflow-x-clip">
       {/* ─── 1 · Hero diptych — title left, real question right ─── */}
@@ -59,70 +56,45 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <Link
-          href={`/questions/${SPECIMEN.slug}`}
-          className="md:col-span-5 block border border-line rounded-[10px] bg-surface p-5 hover:border-brand transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand group"
-        >
-          <div className={`${label} flex flex-wrap gap-x-4 gap-y-1 mb-4`}>
-            <span className="text-brand">{SPECIMEN.tier}</span>
-            <span>{SPECIMEN.difficulty}</span>
-            <span className="tabular-nums">{SPECIMEN.minutes} min</span>
-            <span>JS · TS</span>
-          </div>
-          <h2 className="text-[1.25rem] font-semibold tracking-tight mb-3">
-            {SPECIMEN.title}
-          </h2>
-          <p className="font-mono text-[0.8rem] leading-[1.6] text-ink-secondary m-0">
-            {SPECIMEN.prompt}
-          </p>
-          <span className="mt-5 inline-flex items-center gap-1 text-[0.85rem] font-medium text-ink group-hover:text-brand transition-colors duration-150">
-            Open question <ArrowRight size={14} aria-hidden="true" />
-          </span>
-        </Link>
+        <HeroQuestionRotator questions={heroQuestions} />
       </section>
 
       {/* ─── Wordmark marquee — where the questions come from ─── */}
+      {companies.length > 0 && (
       <section className={`${rule} py-10 max-md:py-8`}>
         <p className={`${label} max-w-[1120px] mx-auto px-6 max-md:px-4 mb-6`}>
           Adapted from interview rounds at
         </p>
         <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)] motion-reduce:[mask-image:none]">
           <ul className="flex w-max gap-x-12 m-0 p-0 list-none animate-[marquee_60s_linear_infinite] hover:[animation-play-state:paused] motion-reduce:animate-none motion-reduce:w-auto motion-reduce:flex-wrap motion-reduce:gap-y-3 motion-reduce:max-w-[1120px] motion-reduce:mx-auto motion-reduce:px-6 max-md:motion-reduce:px-4">
-            {[...COMPANIES, ...COMPANIES].map((name, i) => (
+            {[...companies, ...companies].map((name, i) => (
               <li
                 key={`${name}-${i}`}
-                aria-hidden={i >= COMPANIES.length || undefined}
-                className={`text-[1.35rem] font-semibold tracking-[-0.02em] text-muted whitespace-nowrap${i >= COMPANIES.length ? " motion-reduce:hidden" : ""}`}
+                aria-hidden={i >= companies.length || undefined}
+                className={`inline-flex items-center gap-2.5 text-[1.35rem] font-semibold tracking-[-0.02em] text-muted whitespace-nowrap${i >= companies.length ? " motion-reduce:hidden" : ""}`}
               >
+                <CompanyLogo name={name} size={22} />
                 {name}
               </li>
             ))}
           </ul>
         </div>
       </section>
+      )}
 
       {/* ─── 2 · Diptych, proof left — the editor ─── */}
       <section className={`${rule}`}>
         <div className="max-w-[1120px] mx-auto px-6 max-md:px-4 py-20 max-md:py-12 grid md:grid-cols-12 gap-12 max-md:gap-8 items-center">
-          <figure className="md:col-span-6 md:order-1 max-md:order-2 m-0 border border-line rounded-[10px] bg-surface overflow-hidden">
-            <figcaption className={`${label} px-4 py-2.5 border-b border-line`}>
-              {SPECIMEN.slug}.js
-            </figcaption>
-            <pre className="m-0 p-4 font-mono text-[0.85rem] leading-[1.6] text-ink overflow-x-auto">
-              <code>{SPECIMEN.starter}</code>
-            </pre>
-            <div className={`${label} px-4 py-2.5 border-t border-line`}>
-              Run tests · hidden cases checked on submit
-            </div>
-          </figure>
+          <SolveDemo />
           <div className="md:col-span-6 md:order-2 max-md:order-1">
             <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.1] tracking-[-0.02em] mb-4">
               Solve it right here.
             </h2>
             <p className="text-ink-secondary leading-[1.65] max-w-[48ch] m-0">
               Every question ships with starter code, a full editor, and a
-              test runner. No setup — open a question and start typing.
-              Submit to run the hidden tests and get a verdict.
+              test runner. JavaScript, TypeScript, React and Python all run
+              in your browser — no setup. Submit to run the hidden tests and
+              get a verdict.
             </p>
           </div>
         </div>

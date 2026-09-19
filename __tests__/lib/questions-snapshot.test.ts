@@ -35,8 +35,9 @@ describe('buildQuestionRenderData', () => {
 
   it('aggregates tags + starter + description + publicTest + pack', async () => {
     tagLinkFindMany.mockResolvedValue([
-      { tag: { name: 'arrays' } },
-      { tag: { name: 'two-pointer' } }
+      { tag: { name: 'arrays', kind: 'TOPIC' } },
+      { tag: { name: 'two-pointer', kind: 'TOPIC' } },
+      { tag: { name: 'Visa', kind: 'COMPANY' } }
     ]);
     versionFindFirst.mockResolvedValue({
       content: { description: 'Solve two sum' },
@@ -51,6 +52,7 @@ describe('buildQuestionRenderData', () => {
     expect(data).toEqual({
       description: 'Solve two sum',
       tags: ['arrays', 'two-pointer'],
+      companies: ['Visa'],
       starterCode: { js: 'function solve(){}', ts: 'function solve(): number {}' },
       publicTestCode: 'expect(solve(1)).toBe(1)',
       packId: 'pack_42'
@@ -67,6 +69,7 @@ describe('buildQuestionRenderData', () => {
     expect(await buildQuestionRenderData('q-missing')).toEqual({
       description: null,
       tags: [],
+      companies: [],
       starterCode: {},
       publicTestCode: null,
       packId: null

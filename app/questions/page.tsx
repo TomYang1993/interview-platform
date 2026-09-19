@@ -38,6 +38,7 @@ export default async function QuestionsPage({ searchParams: searchParamsPromise 
       type: q.type,
       accessTier: q.accessTier,
       tags: q.tags,
+      companies: q.companies,
       locked: q.locked,
       status: stat?.status ?? 'unattempted',
       passedCount: stat?.passedCount ?? 0,

@@ -1,22 +1,7 @@
 import { PrismaClient, Prisma, QuestionVersionStatus } from '@prisma/client';
 import type { SeedQuestion } from './types';
 import { refreshQuestionRenderData } from '../../lib/questions-snapshot';
-
-/**
- * Ensure tag names exist and return a name → id map.
- */
-async function ensureTags(prisma: PrismaClient, tagNames: string[]) {
-  const tagMap = new Map<string, string>();
-  for (const name of tagNames) {
-    const tag = await prisma.questionTag.upsert({
-      where: { name },
-      update: {},
-      create: { name },
-    });
-    tagMap.set(name, tag.id);
-  }
-  return tagMap;
-}
+import { ensureTagIds } from '../../lib/question-tags';
 
 /**
  * Seed a single question with all related data:
@@ -30,7 +15,10 @@ export async function seedQuestion(
   question: SeedQuestion,
   createdById: string,
 ) {
-  const tagMap = await ensureTags(prisma, question.tags);
+  const desiredTagIds = [
+    ...(await ensureTagIds(prisma, question.tags, 'TOPIC')),
+    ...(await ensureTagIds(prisma, question.companies ?? [], 'COMPANY')),
+  ];
 
   const q = await prisma.question.upsert({
     where: { slug: question.slug },
@@ -68,7 +56,6 @@ export async function seedQuestion(
   });
 
   // Link tags — reconcile so removed tags actually disappear (seed is source of truth)
-  const desiredTagIds = question.tags.map((name) => tagMap.get(name)!);
   await prisma.questionTagOnQuestion.deleteMany({
     where: { questionId: q.id, tagId: { notIn: desiredTagIds } },
   });

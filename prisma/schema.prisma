@@ -172,9 +172,15 @@ model QuestionVersion {
   @@map("question_versions")
 }
 
+enum TagKind {
+  TOPIC
+  COMPANY
+}
+
 model QuestionTag {
   id        String                @id @default(cuid())
   name      String                @unique
+  kind      TagKind               @default(TOPIC)
   questions QuestionTagOnQuestion[]
 
   @@map("question_tags")

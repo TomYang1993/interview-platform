@@ -6,6 +6,7 @@ import { badRequest } from '@/lib/api';
 import { authorizeAdmin } from '@/lib/auth/current-user';
 import { createAuditLog } from '@/lib/audit';
 import { refreshQuestionRenderData } from '@/lib/questions-snapshot';
+import { ensureTagIds } from '@/lib/question-tags';
 
 const bodySchema = z.object({
   slug: z.string().min(3),
@@ -17,6 +18,7 @@ const bodySchema = z.object({
   isPublished: z.boolean().default(false),
   timeLimitMinutes: z.number().int().positive(),
   tags: z.array(z.string()).default([]),
+  companies: z.array(z.string()).default([]),
   content: z.record(z.unknown()).default({}),
   starterCode: z.record(z.string()).default({}),
   publicTestCode: z.string().optional(),
@@ -33,16 +35,10 @@ export async function POST(req: NextRequest) {
   }
 
   const data = parsed.data;
-  const tagIds = await Promise.all(
-    data.tags.map(async (name) => {
-      const tag = await prisma.questionTag.upsert({
-        where: { name },
-        update: {},
-        create: { name }
-      });
-      return tag.id;
-    })
-  );
+  const tagIds = [
+    ...(await ensureTagIds(prisma, data.tags, 'TOPIC')),
+    ...(await ensureTagIds(prisma, data.companies, 'COMPANY')),
+  ];
 
   const existing = await prisma.question.findUnique({ where: { slug: data.slug } });
   if (existing) {

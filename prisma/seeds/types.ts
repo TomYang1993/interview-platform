@@ -22,8 +22,10 @@ export interface SeedQuestion {
   type: QuestionType;
   difficulty: Difficulty;
   accessTier: AccessTier;
-  /** Tag names — resolved to IDs in seed.ts */
+  /** Topic tag names — resolved to IDs in seed.ts */
   tags: string[];
+  /** Companies the question was asked at (COMPANY tags). */
+  companies?: string[];
   starterCode: Record<string, string>;
   timeLimitMinutes: number;
 
