@@ -677,6 +677,11 @@ code {
   to { transform: translateX(-50%); }
 }
 
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.55; }
+}
+
 @keyframes hero-progress {
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
