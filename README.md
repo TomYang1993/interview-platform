@@ -32,6 +32,9 @@ Front-end coding interview platform: JS/TS function questions, React component q
 - `npm run test:integration` — integration
 - `npm run test:db` — reset test DB
 
+## Adding Questions
+New questions live in the private content repo and are imported with `scripts/import-questions.ts`. See [docs/adding-questions.md](docs/adding-questions.md).
+
 ## Data Scripts
 
 Backup all app data as JSON:
