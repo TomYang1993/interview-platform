@@ -91,13 +91,14 @@ export interface WhatsNewItem {
 }
 
 /**
- * Every published question, most recently published first. Questions from
- * before `publishedAt` existed have no date and follow, newest-created first.
- * Offset-paged for the infinite scroll on /whats-new.
+ * Published questions that carry at least one company tag — /whats-new is a
+ * marketing page, so untagged questions stay off it. Most recently published
+ * first; questions from before `publishedAt` existed follow, newest-created
+ * first. Offset-paged for the infinite scroll.
  */
 export async function listWhatsNew(offset = 0, limit = WHATS_NEW_PAGE_SIZE) {
   const rows = await prisma.question.findMany({
-    where: { isPublished: true },
+    where: { isPublished: true, tags: { some: { tag: { kind: 'COMPANY' } } } },
     orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
     skip: offset,
     take: limit + 1,

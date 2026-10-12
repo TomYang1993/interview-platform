@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CompanyChip, NewBadge } from '@/components/question-badges';
+import { CompanyBadge, NewBadge } from '@/components/question-badges';
 import type { WhatsNewItem } from '@/lib/questions';
 
 interface Props {
@@ -61,31 +61,29 @@ export function WhatsNewList({ initialItems, initialNextOffset }: Props) {
   }, [loadMore, nextOffset, failed]);
 
   if (items.length === 0) {
-    return <p className="py-12 text-muted">No questions yet.</p>;
+    return <p className="py-12 text-muted">No company questions yet.</p>;
   }
 
   return (
     <>
-      <ol className="list-none m-0 p-0">
+      <ol className="list-none m-0 p-0 mt-6 grid gap-4">
         {items.map((q) => (
-          <li key={q.slug} className="py-5 border-b border-line">
+          <li key={q.slug} className="rounded-[12px] border border-line bg-surface p-5 sm:p-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`${label} text-muted mr-1`}>Asked at</span>
+              {q.companies.map((c) => (
+                <CompanyBadge key={c} name={c} />
+              ))}
+            </div>
             <Link
               href={`/questions/${q.slug}`}
-              className="inline-flex items-center gap-2 font-semibold text-[1.05rem] tracking-tight text-ink hover:text-brand transition-colors duration-150"
+              className="mt-4 inline-flex flex-wrap items-center gap-2 font-semibold text-[1.15rem] tracking-tight text-ink hover:text-brand transition-colors duration-150"
             >
               {q.title}
               {q.isNew && <NewBadge />}
             </Link>
             {q.description && (
-              <p className="m-0 mt-1 text-[0.92rem] text-muted leading-relaxed max-w-[64ch]">{q.description}</p>
-            )}
-            {q.companies.length > 0 && (
-              <div className={`${label} flex flex-wrap items-center gap-x-2 gap-y-1.5 mt-3`}>
-                <span className="text-muted">Asked at</span>
-                {q.companies.map((c) => (
-                  <CompanyChip key={c} name={c} />
-                ))}
-              </div>
+              <p className="m-0 mt-1.5 text-[0.95rem] text-muted leading-relaxed max-w-[64ch]">{q.description}</p>
             )}
           </li>
         ))}
@@ -103,7 +101,7 @@ export function WhatsNewList({ initialItems, initialNextOffset }: Props) {
             </button>
           )
         ) : (
-          <span className={`${label} text-muted`}>That&apos;s every question. More are on the way.</span>
+          <span className={`${label} text-muted`}>More company questions are on the way.</span>
         )}
       </div>
     </>

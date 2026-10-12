@@ -47,7 +47,8 @@ describe('listWhatsNew', () => {
     findMany.mockResolvedValue([row('a', new Date(now.getTime() - DAY)), row('b', null), row('c', null)]);
     const page = await listWhatsNew(4, 2);
     expect(findMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { isPublished: true },
+      // Marketing page: only questions with at least one company tag.
+      where: { isPublished: true, tags: { some: { tag: { kind: 'COMPANY' } } } },
       orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
       skip: 4,
       take: 3
