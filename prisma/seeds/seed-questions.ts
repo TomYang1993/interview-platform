@@ -9,12 +9,20 @@ import { ensureTagIds } from '../../lib/question-tags';
  *
  * Fully self-contained — resolves its own tags.
  * Safe to call repeatedly (all operations are upserts).
+ *
+ * `options.isPublished` controls visibility. When omitted, new questions are
+ * created published (seed behaviour) and existing ones keep their current
+ * state; when set, it is applied to the question and its version on both
+ * create and update.
  */
 export async function seedQuestion(
   prisma: PrismaClient,
   question: SeedQuestion,
   createdById: string,
+  options: { isPublished?: boolean } = {},
 ) {
+  const { isPublished } = options;
+  const createPublished = isPublished ?? true;
   const desiredTagIds = [
     ...(await ensureTagIds(prisma, question.tags, 'TOPIC')),
     ...(await ensureTagIds(prisma, question.companies ?? [], 'COMPANY')),
@@ -35,6 +43,7 @@ export async function seedQuestion(
       functionName: question.functionName ?? null,
       publicTestCases: (question.publicTestCases ?? Prisma.DbNull) as unknown as Prisma.InputJsonValue,
       hiddenTestCases: (question.hiddenTestCases ?? Prisma.DbNull) as unknown as Prisma.InputJsonValue,
+      ...(isPublished !== undefined && { isPublished }),
     },
     create: {
       slug: question.slug,
@@ -44,7 +53,7 @@ export async function seedQuestion(
       difficulty: question.difficulty,
       accessTier: question.accessTier,
       timeLimitMinutes: question.timeLimitMinutes,
-      isPublished: true,
+      isPublished: createPublished,
       createdById,
       publicTestCode: question.publicTestCode ?? null,
       hiddenTestCode: question.hiddenTestCode ?? null,
@@ -73,16 +82,26 @@ export async function seedQuestion(
     update: {
       content: { description: question.description },
       starterCode: question.starterCode,
+      ...(isPublished === true && { status: QuestionVersionStatus.PUBLISHED }),
+      ...(isPublished === false && { status: QuestionVersionStatus.DRAFT, publishedAt: null }),
     },
     create: {
       questionId: q.id,
       version: 1,
-      status: QuestionVersionStatus.PUBLISHED,
+      status: createPublished ? QuestionVersionStatus.PUBLISHED : QuestionVersionStatus.DRAFT,
       content: { description: question.description },
       starterCode: question.starterCode,
-      publishedAt: new Date(),
+      publishedAt: createPublished ? new Date() : null,
     },
   });
+
+  // First publish of an existing draft — stamp publishedAt, keep it on re-imports.
+  if (isPublished === true) {
+    await prisma.questionVersion.updateMany({
+      where: { questionId: q.id, version: 1, publishedAt: null },
+      data: { publishedAt: new Date() },
+    });
+  }
 
   // Refresh denormalized renderData so the read path (lib/questions.ts)
   // sees the latest starterCode, tags, description, and publicTestCode.
