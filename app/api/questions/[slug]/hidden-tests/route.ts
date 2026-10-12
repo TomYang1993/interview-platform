@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireUser } from '@/lib/auth/current-user';
-import { unauthorized } from '@/lib/api';
+import { canAccessQuestion, getEntitlementContext } from '@/lib/auth/entitlement';
+import { forbidden, notFound, unauthorized } from '@/lib/api';
 
 /**
  * Returns hidden test material for client-side execution.
@@ -11,7 +12,8 @@ import { unauthorized } from '@/lib/api';
  * - Backend (`language` set, e.g. python): returns structured `testCases` + `functionName`
  *   so the client-side Pyodide worker can replay them.
  *
- * Requires authentication.
+ * Requires authentication, a published question, and access to its tier —
+ * hidden tests of a PREMIUM question are as sensitive as its solutions.
  */
 export async function GET(
   req: NextRequest,
@@ -26,6 +28,9 @@ export async function GET(
   const question = await prisma.question.findUnique({
     where: { id: slug },
     select: {
+      id: true,
+      accessTier: true,
+      isPublished: true,
       hiddenTestCode: true,
       hiddenTestCases: true,
       language: true,
@@ -33,7 +38,18 @@ export async function GET(
     },
   });
 
-  if (question?.language) {
+  if (!question || !question.isPublished) {
+    return notFound('Question not found');
+  }
+
+  if (question.accessTier !== 'FREE') {
+    const entitlement = await getEntitlementContext(user.id);
+    if (!canAccessQuestion(question.accessTier, question.id, entitlement)) {
+      return forbidden('Upgrade required');
+    }
+  }
+
+  if (question.language) {
     return NextResponse.json({
       language: question.language,
       functionName: question.functionName ?? null,
@@ -41,5 +57,5 @@ export async function GET(
     });
   }
 
-  return NextResponse.json({ testCode: question?.hiddenTestCode || '' });
+  return NextResponse.json({ testCode: question.hiddenTestCode || '' });
 }
