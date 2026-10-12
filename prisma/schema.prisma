@@ -133,6 +133,10 @@ model Question {
   difficulty       Difficulty
   accessTier       AccessTier             @default(FREE)
   isPublished      Boolean                @default(false)
+  /// When the question first went live. Drives /whats-new, the banner and the "New" badge.
+  /// Kept on unpublish so a re-publish doesn't jump back to the top. Null for questions
+  /// published before this column existed.
+  publishedAt      DateTime?
   timeLimitMinutes Int
   renderData       Json?
   publicTestCode   String?

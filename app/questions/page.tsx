@@ -40,6 +40,7 @@ export default async function QuestionsPage({ searchParams: searchParamsPromise 
       tags: q.tags,
       companies: q.companies,
       locked: q.locked,
+      isNew: q.isNew,
       status: stat?.status ?? 'unattempted',
       passedCount: stat?.passedCount ?? 0,
     };
