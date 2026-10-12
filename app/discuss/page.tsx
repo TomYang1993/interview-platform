@@ -1,17 +1,20 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/db/prisma';
+import { getCurrentServerUser } from '@/lib/auth/current-user-server';
+import { getEntitlementContext } from '@/lib/auth/entitlement';
+import { accessibleQuestionWhere, discussionAuthorName, discussionAuthorSelect } from '@/lib/discuss';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DiscussPage() {
+  const user = await getCurrentServerUser();
+  const entitlement = user ? await getEntitlementContext(user.id) : null;
+
+  // Threads often contain solutions: only list those on questions this viewer can open.
   const threads = await prisma.discussionThread.findMany({
-    where: { status: 'ACTIVE' },
+    where: { status: 'ACTIVE', question: accessibleQuestionWhere(entitlement) },
     include: {
-      user: {
-        include: {
-          profile: true
-        }
-      },
+      user: discussionAuthorSelect,
       question: {
         select: {
           title: true,
@@ -37,7 +40,7 @@ export default async function DiscussPage() {
             <h3>{thread.title}</h3>
             <p>{thread.body}</p>
             <p className="meta-row">
-              <span>{thread.user.profile?.displayName || thread.user.email}</span>
+              <span>{discussionAuthorName(thread.user)}</span>
               <span>{thread.comments.length} comments</span>
               <span>{thread.likes.length} likes</span>
             </p>

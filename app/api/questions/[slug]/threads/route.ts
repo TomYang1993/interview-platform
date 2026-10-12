@@ -1,24 +1,33 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { notFound, serverError } from '@/lib/api';
+import { getCurrentUserFromRequest } from '@/lib/auth/current-user';
+import { serverError } from '@/lib/api';
+import { discussionAuthorName, discussionAuthorSelect, questionAccessError } from '@/lib/discuss';
 
-export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+/**
+ * Lists active discussion threads for a question. The slug param is the question ID.
+ * Threads often contain solutions, so they are gated exactly like the question itself.
+ */
+export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
     const question = await prisma.question.findUnique({
       where: { id: slug },
-      select: { id: true }
+      select: { id: true, accessTier: true, isPublished: true }
     });
 
-    if (!question) return notFound('Question not found');
+    // Only resolve the session when the tier actually needs it.
+    const user = question?.accessTier && question.accessTier !== 'FREE'
+      ? await getCurrentUserFromRequest(req)
+      : null;
+    const denied = await questionAccessError(question, user?.id ?? null);
+    if (denied) return denied;
 
     const threads = await prisma.discussionThread.findMany({
       where: { questionId: slug, status: 'ACTIVE' },
       include: {
         _count: { select: { comments: true, likes: true } },
-        user: {
-          include: { profile: true }
-        }
+        user: discussionAuthorSelect
       },
       orderBy: { createdAt: 'desc' },
       take: 20
@@ -28,7 +37,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       id: thread.id,
       title: thread.title,
       body: thread.body,
-      author: thread.user.profile?.displayName || thread.user.email,
+      author: discussionAuthorName(thread.user),
       commentsCount: thread._count.comments,
       likesCount: thread._count.likes,
     }));
