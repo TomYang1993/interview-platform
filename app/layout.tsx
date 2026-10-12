@@ -10,7 +10,9 @@ import { AnnouncementBanner } from '@/components/announcement-banner';
 import { ToastProvider } from '@/components/toast-provider';
 import { UserProvider } from '@/components/user-provider';
 import { ThemeProvider } from '@/components/theme-provider';
+import { unstable_cache } from 'next/cache';
 import { getCurrentServerUser } from '@/lib/auth/current-user-server';
+import { getLatestQuestion } from '@/lib/questions';
 
 const VALID_THEMES = ['light', 'dark', 'focus'] as const;
 type Theme = typeof VALID_THEMES[number];
@@ -29,13 +31,25 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: 'block',
 });
 
+// The banner renders on every page, so keep its DB read off the hot path.
+// A newly published question reaches the banner within five minutes.
+const getBannerQuestion = unstable_cache(
+  async () => getLatestQuestion().catch(() => null),
+  ['banner-latest-question'],
+  { revalidate: 300 }
+);
+
 export const metadata: Metadata = {
   title: 'Whack The Fullstack Interview',
   description: 'LeetCode + GreatFrontEnd style practice platform for JS and React interviews.',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [user, cookieStore] = await Promise.all([getCurrentServerUser(), cookies()]);
+  const [user, cookieStore, latestQuestion] = await Promise.all([
+    getCurrentServerUser(),
+    cookies(),
+    getBannerQuestion(),
+  ]);
   const cookieTheme = cookieStore.get('theme')?.value;
   const theme: Theme = VALID_THEMES.includes(cookieTheme as Theme) ? (cookieTheme as Theme) : DEFAULT_THEME;
 
@@ -46,7 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <UserProvider user={user}>
             <ToastProvider>
               <HeaderWrapper>
-                <AnnouncementBanner />
+                <AnnouncementBanner latest={latestQuestion} />
                 <SiteHeader />
               </HeaderWrapper>
               <main className="container page-shell">{children}</main>

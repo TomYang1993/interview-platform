@@ -96,7 +96,13 @@ export async function seedQuestion(
   });
 
   // First publish of an existing draft — stamp publishedAt, keep it on re-imports.
+  // Question.publishedAt (the "what's new" date) is only set on an explicit
+  // publish, so the plain seed leaves dev fixtures undated.
   if (isPublished === true) {
+    await prisma.question.updateMany({
+      where: { id: q.id, publishedAt: null },
+      data: { publishedAt: new Date() },
+    });
     await prisma.questionVersion.updateMany({
       where: { questionId: q.id, version: 1, publishedAt: null },
       data: { publishedAt: new Date() },
