@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
       difficulty: data.difficulty,
       accessTier: data.accessTier,
       isPublished: data.isPublished,
+      publishedAt: data.isPublished ? new Date() : null,
       timeLimitMinutes: data.timeLimitMinutes,
       createdById: admin.id,
       publicTestCode: data.publicTestCode,

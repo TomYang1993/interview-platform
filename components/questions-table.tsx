@@ -4,7 +4,7 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import { DIFFICULTY_LABEL, DIFFICULTY_TEXT_CLASS, TYPE_LABEL } from '@/types/domain';
 import { Check, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
-import { CompanyLogo } from '@/components/company-logo';
+import { CompanyChip, NewBadge } from '@/components/question-badges';
 
 export interface QuestionRow {
   id: string;
@@ -18,6 +18,8 @@ export interface QuestionRow {
   /** Company names the question was asked at */
   companies: string[];
   locked: boolean;
+  /** Published within the last NEW_QUESTION_DAYS */
+  isNew: boolean;
   /** 'solved' | 'attempted' | 'unattempted' */
   status: string;
   /** Number of successful (PASSED) submissions */
@@ -71,10 +73,7 @@ function CompanyRow({ companies, type }: { companies: string[]; type: string }) 
     <div className={clsx(label, 'flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2.5')}>
       <span className="md:hidden text-muted">{type}</span>
       {companies.map((c) => (
-        <span key={c} className="inline-flex items-center gap-1.5 h-5 pl-1 pr-1.5 rounded-[4px] border border-line text-ink-secondary normal-case tracking-normal font-medium">
-          <CompanyLogo name={c} size={12} className="rounded-[2px]" />
-          {c}
-        </span>
+        <CompanyChip key={c} name={c} />
       ))}
     </div>
   );
@@ -106,6 +105,7 @@ export function QuestionsTable({ questions, isLoggedIn, page, pageSize, totalPag
               <td className="py-4 pr-4 align-top">
                 <Link href={`/questions/${q.slug}`} className="font-semibold text-[1rem] tracking-tight text-ink group-hover:text-brand transition-colors duration-150 inline-flex items-center gap-2">
                   {q.title}
+                  {q.isNew && <NewBadge />}
                   {q.locked && (
                     <span className={clsx(label, 'inline-flex items-center gap-1 text-caution')}>
                       <Lock size={11} aria-hidden="true" /> Pro

@@ -28,7 +28,7 @@ questions/<slug>/
   "description": "One-line summary for the question list.",
   "type": "FUNCTION_PYTHON",
   "difficulty": "MEDIUM",
-  "accessTier": "PREMIUM",
+  "accessTier": "FREE",
   "timeLimitMinutes": 30,
   "tags": ["tree", "dfs"],
   "companies": ["Visa"],
@@ -38,6 +38,8 @@ questions/<slug>/
 ```
 
 - `type` is one of `FUNCTION_JS`, `REACT_APP`, `FUNCTION_PYTHON`.
+- `accessTier`: use `FREE` for now. Questions may move to `PREMIUM` later, but everything ships free until then.
+- `companies` become "Asked at" company tags. The logo comes from `<name>.com` with spaces and punctuation removed, so use the company's usual name (`Goldman Sachs`, not `GS`).
 - `functionName` is required for Python and must be a **top-level function**. The grader calls it by name, so `class Solution` won't work.
 - Starter keys: `python`, `javascript`, `typescript`, `react`, `reactTypescript`.
 - Python test case: `{ "name": "...", "args": [...], "expected": ... }`. `args` is spread into the call, and the output is compared with `==` after a JSON round-trip.

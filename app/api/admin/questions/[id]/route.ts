@@ -87,6 +87,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         ...(data.difficulty !== undefined && { difficulty: data.difficulty }),
         ...(data.accessTier !== undefined && { accessTier: data.accessTier }),
         ...(data.isPublished !== undefined && { isPublished: data.isPublished }),
+        ...(data.isPublished === true && !existing.publishedAt && { publishedAt: new Date() }),
         ...(data.timeLimitMinutes !== undefined && { timeLimitMinutes: data.timeLimitMinutes }),
         ...(data.publicTestCode !== undefined && { publicTestCode: data.publicTestCode }),
         ...(data.hiddenTestCode !== undefined && { hiddenTestCode: data.hiddenTestCode }),
