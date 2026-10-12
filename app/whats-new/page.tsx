@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "What's new · Whack The Fullstack Interview",
-  description: 'The newest interview questions first, with the companies that asked them.',
+  description: 'Real interview questions and the companies that asked them, newest first.',
 };
 
 export default async function WhatsNewPage() {
@@ -14,9 +14,9 @@ export default async function WhatsNewPage() {
 
   return (
     <div className="max-w-[760px] mx-auto px-4 sm:px-6 pb-12">
-      <header className="pb-6 border-b border-line">
+      <header>
         <h1 className="m-0 text-[2rem] font-bold tracking-[-0.02em]">What&apos;s new</h1>
-        <p className="m-0 mt-2 text-muted">The newest questions first, with the companies that asked them.</p>
+        <p className="m-0 mt-2 text-muted">Real interview questions and the companies that asked them, newest first.</p>
       </header>
       <WhatsNewList initialItems={items} initialNextOffset={nextOffset} />
     </div>
