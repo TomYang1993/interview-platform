@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { SandpackProvider, SandpackTests, useSandpack } from '@codesandbox/sandpack-react';
+import { withReactInScope } from '@/lib/runners/react-scope';
 
 export interface ReactTestResult {
   name: string;
@@ -198,7 +199,7 @@ export function ReactTestRunner({
 
   const files = useMemo(
     () => ({
-      [appFile]: appCode,
+      [appFile]: withReactInScope(appCode),
       '/styles.css': stylesCode,
       [testFile]: TEST_HEADER + testCode,
       '/add.ts': '',
