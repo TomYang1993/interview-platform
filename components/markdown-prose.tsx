@@ -4,6 +4,7 @@ import React from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { useSyntaxTheme } from '@/lib/hooks/use-syntax-theme';
+import { CALLOUT_RE, type CalloutKind } from '@/lib/markdown-callouts';
 
 interface MarkdownProseProps {
   children: string;
@@ -12,16 +13,12 @@ interface MarkdownProseProps {
 
 /* ── Obsidian-style callout parsing ──────────────────────────── */
 
-type CalloutKind = 'tip' | 'info' | 'warning' | 'note';
-
 interface Segment {
   type: 'markdown' | 'callout';
   content: string;
   calloutKind?: CalloutKind;
   calloutTitle?: string;
 }
-
-const CALLOUT_RE = /^> \[!(tip|info|warning|note)\](?: (.+))?\n((?:^> ?.*(?:\n|$))*)/gm;
 
 function parseCallouts(markdown: string): Segment[] {
   const segments: Segment[] = [];
