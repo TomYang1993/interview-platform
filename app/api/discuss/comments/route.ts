@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db/prisma';
-import { badRequest, unauthorized } from '@/lib/api';
+import { badRequest, forbidden, notFound, unauthorized } from '@/lib/api';
 import { requireUser } from '@/lib/auth/current-user';
+import { questionAccessError } from '@/lib/discuss';
 
 const bodySchema = z.object({
   threadId: z.string().min(1),
@@ -19,6 +20,23 @@ export async function POST(req: NextRequest) {
   const parsed = bodySchema.safeParse(await req.json());
   if (!parsed.success) {
     return badRequest(parsed.error.issues[0]?.message || 'Invalid comment payload');
+  }
+
+  // Comments inherit the thread's question gating; hidden threads don't exist publicly.
+  const thread = await prisma.discussionThread.findUnique({
+    where: { id: parsed.data.threadId },
+    select: {
+      status: true,
+      question: { select: { id: true, accessTier: true, isPublished: true } }
+    }
+  });
+  if (!thread || thread.status === 'HIDDEN') {
+    return notFound('Thread not found');
+  }
+  const denied = await questionAccessError(thread.question, user.id);
+  if (denied) return denied;
+  if (thread.status === 'LOCKED') {
+    return forbidden('Thread is locked');
   }
 
   const comment = await prisma.discussionComment.create({

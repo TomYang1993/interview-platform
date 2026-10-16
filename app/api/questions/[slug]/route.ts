@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getCurrentUserFromRequest } from '@/lib/auth/current-user';
 import { getEntitlementContext, canAccessQuestion } from '@/lib/auth/entitlement';
 import { notFound, forbidden } from '@/lib/api';
+import { discussionAuthorName, discussionAuthorSelect } from '@/lib/discuss';
 
 interface Params {
   params: Promise<{ slug: string }>;
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         orderBy: { createdAt: 'desc' },
         take: 20,
         include: {
-          user: { include: { profile: true } },
+          user: discussionAuthorSelect,
           _count: { select: { comments: true, likes: true } }
         }
       }
@@ -66,7 +67,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         title: thread.title,
         body: thread.body,
         createdAt: thread.createdAt,
-        author: thread.user.profile?.displayName || thread.user.email,
+        author: discussionAuthorName(thread.user),
         commentsCount: thread._count.comments,
         likesCount: thread._count.likes
       }))
