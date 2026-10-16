@@ -23,7 +23,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { seedQuestion } from '../prisma/seeds/seed-questions';
 import { diffQuestion, previewValue, type FieldDiff } from '../prisma/seeds/diff';
-import { ContentError, findQuestionDirs, loadQuestionDir } from '../prisma/seeds/content-loader';
+import { ContentError, findQuestionDirs, lintQuestion, loadQuestionDir } from '../prisma/seeds/content-loader';
 import { verifyQuestion } from '../prisma/seeds/verify-solutions';
 import type { SeedQuestion } from '../prisma/seeds/types';
 
@@ -64,7 +64,7 @@ async function main() {
     const report = await verifyQuestion(q);
     console.log(`${report.ok ? '✓' : '✗'} ${q.slug} (${q.type}, ${q.accessTier})`);
     for (const s of report.summary) console.log(`    ${s}`);
-    for (const w of report.warnings) console.log(`    ⚠ ${w}`);
+    for (const w of [...report.warnings, ...lintQuestion(q)]) console.log(`    ⚠ ${w}`);
     for (const e of report.errors) console.log(`    ✗ ${e}`);
     failed ||= !report.ok;
   }

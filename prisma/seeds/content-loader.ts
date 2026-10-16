@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
 import { z } from 'zod';
 import type { BackendTestCase, SeedQuestion, SeedSolution } from './types';
+import { lintCallouts } from '../../lib/markdown-callouts';
 
 /**
  * Loads questions authored as folders (the private content repo format)
@@ -193,4 +194,16 @@ function readCases(path: string, fail: (msg: string) => never): BackendTestCase[
     fail(`tests/${basename(path)} [${issue.path.join('.')}]: ${issue.message}`);
   }
   return parsed.data!;
+}
+
+/**
+ * Non-blocking checks on a loaded question's markdown — currently callouts
+ * that won't render (e.g. `[!warn]`, `[!INFO]`). Each message names the file.
+ */
+export function lintQuestion(q: SeedQuestion): string[] {
+  const files: [string, string][] = [
+    ['prompt.md', q.prompt],
+    ...(q.solutions ?? []).map((s): [string, string] => [`solutions/${s.language}.md`, s.explanation]),
+  ];
+  return files.flatMap(([file, markdown]) => lintCallouts(markdown).map((p) => `${file} ${p}`));
 }

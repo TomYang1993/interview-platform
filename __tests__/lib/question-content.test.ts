@@ -170,3 +170,19 @@ describe('verifyQuestion', () => {
     ]);
   });
 });
+
+describe('lintQuestion', () => {
+  it('names the file for callout problems in the prompt and solution explanation', async () => {
+    const { lintQuestion } = await import('@/prisma/seeds/content-loader');
+    const q = loadQuestionDir(
+      pythonQuestion({
+        'prompt.md': 'Implement `add(a, b)`.\n\n> [!warn] Watch out\n> overflow',
+        'solutions/python.md': '> [!Tip] Sum it\n> easy',
+      })
+    );
+    expect(lintQuestion(q)).toEqual([
+      "prompt.md line 3: [!warn] won't render as a callout — use [!warning]",
+      "solutions/python.md line 1: [!Tip] won't render as a callout — use [!tip]",
+    ]);
+  });
+});
