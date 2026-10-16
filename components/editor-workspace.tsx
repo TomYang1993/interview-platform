@@ -253,6 +253,24 @@ export function EditorWorkspace({
     };
   }, []);
 
+  // ─── Public test suite (shared by Run and Submit) ───
+  async function executePublicTests(currentCode: string): Promise<{ results: TestResult[]; logs: string[] }> {
+    if (!isPython) {
+      return jsRunner.runTests(
+        currentCode,
+        publicTestCode,
+        language as 'javascript' | 'typescript',
+      );
+    }
+    if (!publicTestCases || publicTestCases.length === 0) {
+      throw new Error('No public test cases configured for this question');
+    }
+    if (!functionName) {
+      throw new Error('Question is missing a function name');
+    }
+    return pyRunner.runTests(currentCode, publicTestCases, functionName);
+  }
+
   // ─── Run public tests ───
   async function runPublicTests() {
     setRunning(true);
@@ -260,28 +278,7 @@ export function EditorWorkspace({
     const currentCode = getCode();
 
     try {
-      let results: TestResult[] = [];
-      let logs: string[] = [];
-
-      if (!isPython) {
-        const out = await jsRunner.runTests(
-          currentCode,
-          publicTestCode,
-          language as 'javascript' | 'typescript',
-        );
-        results = out.results;
-        logs = out.logs;
-      } else {
-        if (!publicTestCases || publicTestCases.length === 0) {
-          throw new Error('No public test cases configured for this question');
-        }
-        if (!functionName) {
-          throw new Error('Question is missing a function name');
-        }
-        const out = await pyRunner.runTests(currentCode, publicTestCases, functionName);
-        results = out.results;
-        logs = out.logs;
-      }
+      const { results, logs } = await executePublicTests(currentCode);
 
       setTestResults(results);
       setConsoleLogs((prev) => [...prev, ...logs]);
@@ -301,22 +298,30 @@ export function EditorWorkspace({
     }
   }
 
-  // ─── Submit hidden tests ───
+  // ─── Submit: public + hidden tests ───
   async function submitHiddenTests() {
     setSubmitting(true);
     ensureConsoleOpen();
     const currentCode = getCode();
 
     try {
+      // Re-run the public tests against the code being submitted so the score
+      // never mixes in results from an older Run (or none at all).
+      const hasPublicTests = isPython
+        ? (publicTestCases?.length ?? 0) > 0
+        : publicTestCode.trim() !== '';
+      const publicResults = hasPublicTests
+        ? (await executePublicTests(currentCode)).results
+        : [];
+      setTestResults(publicResults);
+
+      // Fetch hidden tests, run client-side (Worker / Pyodide), post pre-computed result.
+      const htRes = await fetch(`/api/questions/${questionId}/hidden-tests`);
+      if (!htRes.ok) throw new Error('Failed to load hidden tests');
+
       let hiddenResults: TestResult[] = [];
-      let serverData: { passedCount?: number; total?: number; hiddenResults?: TestResult[] } = {};
-
       if (!isPython) {
-        // Fetch hidden test code, run client-side, then post pre-computed result.
-        const htRes = await fetch(`/api/questions/${questionId}/hidden-tests`);
-        if (!htRes.ok) throw new Error('Failed to load hidden tests');
         const { testCode: hiddenTestCode } = (await htRes.json()) as { testCode: string };
-
         if (hiddenTestCode) {
           const out = await jsRunner.runTests(
             currentCode,
@@ -325,83 +330,54 @@ export function EditorWorkspace({
           );
           hiddenResults = out.results;
         }
-
-        const passedCount = hiddenResults.filter((r) => r.passed).length;
-        const total = hiddenResults.length;
-        const score = total > 0 ? Math.round((passedCount / total) * 100) : 0;
-        const runtimeMs = 0;
-
-        const response = await fetch('/api/submissions/judge-hidden', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            questionId,
-            framework: 'javascript',
-            code: currentCode,
-            clientResults: { passedCount, total, score, runtimeMs },
-          }),
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Hidden judge failed');
-        serverData = { passedCount: data.passedCount, total: data.total, hiddenResults };
       } else {
-        // Python — fetch hidden cases, run client-side via Pyodide, post pre-computed result.
-        const htRes = await fetch(`/api/questions/${questionId}/hidden-tests`);
-        if (!htRes.ok) throw new Error('Failed to load hidden tests');
         const ht = (await htRes.json()) as {
           functionName: string | null;
           testCases: PyCase[];
         };
-
         if (!ht.functionName) {
           throw new Error('Question is missing a function name');
         }
-
         if (ht.testCases.length > 0) {
           const out = await pyRunner.runTests(currentCode, ht.testCases, ht.functionName);
           hiddenResults = out.results;
         }
-
-        const passedCount = hiddenResults.filter((r) => r.passed).length;
-        const total = hiddenResults.length;
-        const score = total > 0 ? Math.round((passedCount / total) * 100) : 0;
-        const runtimeMs = 0;
-
-        const response = await fetch('/api/submissions/judge-hidden', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            questionId,
-            framework: 'python',
-            code: currentCode,
-            clientResults: { passedCount, total, score, runtimeMs },
-          }),
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Hidden judge failed');
-        serverData = { passedCount: data.passedCount, total: data.total, hiddenResults };
       }
 
-      const publicPassed = testResults.filter((r) => r.passed).length;
-      const publicTotal = testResults.length;
-      const totalPassed = (serverData.passedCount ?? 0) + publicPassed;
-      const grandTotal = (serverData.total ?? 0) + publicTotal;
-      const allPassed = grandTotal > 0 && totalPassed === grandTotal;
-      const mergedScore = grandTotal > 0 ? Math.round((totalPassed / grandTotal) * 100) : 0;
+      // The stored submission and the Results panel share one score: public + hidden.
+      const allResults = [...publicResults, ...hiddenResults];
+      const passedCount = allResults.filter((r) => r.passed).length;
+      const total = allResults.length;
+      const score = total > 0 ? Math.round((passedCount / total) * 100) : 0;
+      const allPassed = total > 0 && passedCount === total;
+      const runtimeMs = 0;
+
+      const response = await fetch('/api/submissions/judge-hidden', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId,
+          framework: isPython ? 'python' : 'javascript',
+          code: currentCode,
+          clientResults: { passedCount, total, score, runtimeMs },
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Hidden judge failed');
 
       setSubmitResult({
-        score: mergedScore,
+        score,
         status: allPassed ? 'PASSED' : 'FAILED',
-        passedCount: totalPassed,
-        total: grandTotal,
-        publicResults: testResults,
+        passedCount,
+        total,
+        publicResults,
         hiddenResults: hiddenResults.map((r, i) => ({ index: i, ...r })),
       });
       setActiveBottomTab('results');
 
       toast({
-        title: allPassed ? 'All tests passed!' : `Score: ${mergedScore}%`,
-        description: `${totalPassed}/${grandTotal} tests passed`,
+        title: allPassed ? 'All tests passed!' : `Score: ${score}%`,
+        description: `${passedCount}/${total} tests passed`,
         type: allPassed ? 'success' : 'info',
       });
     } catch (error) {
