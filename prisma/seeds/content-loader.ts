@@ -3,6 +3,7 @@ import { basename, extname, join } from 'node:path';
 import { z } from 'zod';
 import type { BackendTestCase, SeedQuestion, SeedSolution } from './types';
 import { lintCallouts } from '../../lib/markdown-callouts';
+import { PYTHON_ARG_TYPES } from '../../lib/runners/python-harness';
 
 /**
  * Loads questions authored as folders (the private content repo format)
@@ -13,8 +14,10 @@ import { lintCallouts } from '../../lib/markdown-callouts';
  *     prompt.md             full prompt shown in the editor
  *     starter/<key>.<ext>   starter code; <key> is the starterCode key
  *                           (python, javascript, typescript, react, reactTypescript)
- *     solutions/<language>.<ext> + solutions/<language>.md
- *                           official solution code + explanation
+ *     solutions/<key>.<ext> + solutions/<key>.md
+ *                           official solution code + explanation; <key> is
+ *                           the language, optionally followed by an approach
+ *                           (python.py, python.iterative.py)
  *     tests/public.json, tests/hidden.json   FUNCTION_PYTHON cases
  *     tests/public.js,   tests/hidden.js     FUNCTION_JS / REACT_APP test code
  */
@@ -33,8 +36,15 @@ const metaSchema = z
     tags: z.array(z.string().min(1)).default([]),
     companies: z.array(z.string().min(1)).default([]),
     functionName: z.string().regex(/^[A-Za-z_]\w*$/).optional(),
-    /** Complexity note per solution language, e.g. { "python": "O(n) time" }. */
+    /** How the grader converts each positional arg, e.g. ["tree"]. FUNCTION_PYTHON only. */
+    argTypes: z.array(z.enum(PYTHON_ARG_TYPES)).optional(),
+    /** Complexity note per solution key, e.g. { "python": "O(n) time" }. */
     complexity: z.record(z.string()).default({}),
+    /**
+     * Card title per solution key, e.g. { "python": "Recursive DFS" }. Listed
+     * order is display order. Required for every solution once there are two.
+     */
+    solutionTitles: z.record(z.string().min(1)).default({}),
   })
   .strict();
 
@@ -104,18 +114,30 @@ export function loadQuestionDir(dir: string): SeedQuestion {
   const starterCode = readCodeFiles(join(dir, 'starter'));
   if (Object.keys(starterCode).length === 0) fail('starter/ has no starter code files');
 
-  const solutions: SeedSolution[] = Object.entries(readCodeFiles(join(dir, 'solutions'))).map(
-    ([language, code]) => ({
-      language,
+  // Display order: keys listed in solutionTitles first, in that order; then
+  // the rest by name, which puts a bare `python` before `python.<approach>`.
+  const titleOrder = Object.keys(meta.solutionTitles);
+  const orderOf = (key: string) => (titleOrder.includes(key) ? titleOrder.indexOf(key) : titleOrder.length);
+  const solutions: SeedSolution[] = Object.entries(readCodeFiles(join(dir, 'solutions')))
+    .sort(([a], [b]) => orderOf(a) - orderOf(b) || a.localeCompare(b))
+    .map(([key, code], position) => ({
+      key,
+      language: key.split('.')[0],
+      title: meta.solutionTitles[key],
+      position,
       code,
-      explanation: readText(join(dir, 'solutions', `${language}.md`), fail).trim(),
-      complexity: meta.complexity[language],
-    })
-  );
+      explanation: readText(join(dir, 'solutions', `${key}.md`), fail).trim(),
+      complexity: meta.complexity[key],
+    }));
   if (solutions.length === 0) fail('solutions/ has no official solution');
-  for (const lang of Object.keys(meta.complexity)) {
-    if (!solutions.some((s) => s.language === lang)) {
-      fail(`complexity.${lang} has no matching solutions/${lang}.* file`);
+  for (const [field, map] of [['complexity', meta.complexity], ['solutionTitles', meta.solutionTitles]] as const) {
+    for (const key of Object.keys(map)) {
+      if (!solutions.some((s) => s.key === key)) fail(`${field}.${key} has no matching solutions/${key}.* file`);
+    }
+  }
+  for (const s of solutions) {
+    if (!s.title && solutions.some((o) => o !== s && o.language === s.language)) {
+      fail(`solutionTitles.${s.key} is required when ${s.language} has more than one solution`);
     }
   }
 
@@ -148,10 +170,17 @@ export function loadQuestionDir(dir: string): SeedQuestion {
 
     question.language = 'python';
     question.functionName = meta.functionName;
+    question.argTypes = meta.argTypes ?? [];
+    for (const c of [...publicCases, ...hiddenCases]) {
+      if (meta.argTypes && c.args.length !== meta.argTypes.length) {
+        fail(`test "${c.name}" has ${c.args.length} args but argTypes lists ${meta.argTypes.length}`);
+      }
+    }
     question.publicTestCases = publicCases;
     question.hiddenTestCases = hiddenCases;
   } else {
     if (meta.functionName) fail(`functionName only applies to FUNCTION_PYTHON`);
+    if (meta.argTypes) fail(`argTypes only applies to FUNCTION_PYTHON`);
     question.publicTestCode = readText(join(dir, 'tests', 'public.js'), fail);
     question.hiddenTestCode = readText(join(dir, 'tests', 'hidden.js'), fail);
   }
@@ -203,7 +232,7 @@ function readCases(path: string, fail: (msg: string) => never): BackendTestCase[
 export function lintQuestion(q: SeedQuestion): string[] {
   const files: [string, string][] = [
     ['prompt.md', q.prompt],
-    ...(q.solutions ?? []).map((s): [string, string] => [`solutions/${s.language}.md`, s.explanation]),
+    ...(q.solutions ?? []).map((s): [string, string] => [`solutions/${s.key ?? s.language}.md`, s.explanation]),
   ];
   return files.flatMap(([file, markdown]) => lintCallouts(markdown).map((p) => `${file} ${p}`));
 }

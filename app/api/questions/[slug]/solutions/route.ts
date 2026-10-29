@@ -16,7 +16,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       }),
       prisma.officialSolution.findMany({
         where: { questionId: slug },
-        orderBy: { updatedAt: 'desc' }
+        orderBy: [{ position: 'asc' }, { createdAt: 'asc' }]
       }),
     ]);
 
@@ -30,6 +30,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     const formatted = solutions.map(sol => ({
       id: sol.id,
       language: sol.language,
+      title: sol.title,
       framework: sol.framework,
       explanation: sol.explanation,
       code: sol.code,

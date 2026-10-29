@@ -94,7 +94,7 @@ beforeEach(() => {
       if (url.endsWith('/hidden-tests')) {
         return {
           ok: true,
-          json: async () => ({ functionName: 'add', testCases: hiddenCases, testCode: 'HIDDEN' })
+          json: async () => ({ functionName: 'add', argTypes: ['json', 'json'], testCases: hiddenCases, testCode: 'HIDDEN' })
         };
       }
       if (url === '/api/submissions/judge-hidden') {
@@ -142,7 +142,7 @@ describe('<EditorWorkspace /> submit scoring', () => {
     expect(readJson<TestResult[]>('test-results').every(r => r.passed)).toBe(true);
     // Stored score matches the displayed one.
     expect(judgeBodies[0].clientResults).toMatchObject({ passedCount: 12, total: 12, score: 100 });
-    expect(pyRunTests).toHaveBeenLastCalledWith(SOLUTION, hiddenCases, 'add');
+    expect(pyRunTests).toHaveBeenLastCalledWith(SOLUTION, hiddenCases, 'add', ['json', 'json']);
   });
 
   it('includes public results when Run was never clicked (Python)', async () => {

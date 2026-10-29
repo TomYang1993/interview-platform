@@ -16,6 +16,7 @@ interface UsePyRunnerReturn {
     userCode: string,
     cases: PyCase[],
     functionName: string,
+    argTypes?: string[],
   ) => Promise<JsRunResult>;
 }
 
@@ -41,7 +42,7 @@ export function usePyRunner(): UsePyRunnerReturn {
   }, []);
 
   const runTests = useCallback(
-    (userCode: string, cases: PyCase[], functionName: string) => {
+    (userCode: string, cases: PyCase[], functionName: string, argTypes: string[] = []) => {
       return new Promise<JsRunResult>((resolve) => {
         activeWorkerRef.current?.terminate();
 
@@ -106,7 +107,7 @@ export function usePyRunner(): UsePyRunnerReturn {
           });
         };
 
-        worker.postMessage({ type: 'RUN', userCode, cases, functionName });
+        worker.postMessage({ type: 'RUN', userCode, cases, functionName, argTypes });
       });
     },
     [],

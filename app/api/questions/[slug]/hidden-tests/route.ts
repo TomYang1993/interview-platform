@@ -9,8 +9,8 @@ import { forbidden, notFound, unauthorized } from '@/lib/api';
  * The slug param here is actually the question ID (passed from the client).
  *
  * - Frontend (JS/React): returns the Jest-string `testCode`.
- * - Backend (`language` set, e.g. python): returns structured `testCases` + `functionName`
- *   so the client-side Pyodide worker can replay them.
+ * - Backend (`language` set, e.g. python): returns structured `testCases`, `functionName`
+ *   and `argTypes` so the client-side Pyodide worker can replay them.
  *
  * Requires authentication, a published question, and access to its tier —
  * hidden tests of a PREMIUM question are as sensitive as its solutions.
@@ -35,6 +35,7 @@ export async function GET(
       hiddenTestCases: true,
       language: true,
       functionName: true,
+      argTypes: true,
     },
   });
 
@@ -53,6 +54,7 @@ export async function GET(
     return NextResponse.json({
       language: question.language,
       functionName: question.functionName ?? null,
+      argTypes: question.argTypes,
       testCases: question.hiddenTestCases ?? [],
     });
   }

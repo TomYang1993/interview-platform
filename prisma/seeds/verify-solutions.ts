@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { transform } from 'sucrase';
-import { PYTHON_HARNESS } from '../../lib/runners/python-harness';
+import { pythonHarness } from '../../lib/runners/python-harness';
 import { TEST_COLLECT_ASYNC_CODE, TEST_HARNESS_CODE } from '../../lib/runners/test-harness';
 import type { BackendTestCase, SeedQuestion } from './types';
 
@@ -49,7 +49,7 @@ export async function verifyQuestion(q: SeedQuestion): Promise<VerifyReport> {
 
   for (const sol of q.solutions ?? []) {
     for (const suite of suites) {
-      const label = `${sol.language} solution · ${suite.label}`;
+      const label = `${sol.key ?? sol.language} solution · ${suite.label}`;
       try {
         const results = await runSuite(q, sol.code, sol.language, suite);
         const failed = results.filter((r) => !r.passed);
@@ -104,7 +104,7 @@ function testSuites(q: SeedQuestion): Suite[] {
 function runSuite(q: SeedQuestion, code: string, language: string, suite: Suite): Promise<CaseResult[]> {
   if (suite.kind === 'cases') {
     if (!q.functionName) throw new Error('functionName is required for Python questions');
-    return runPython(code, suite.cases, q.functionName);
+    return runPython(code, suite.cases, q.functionName, q.argTypes);
   }
   if (language !== 'javascript' && language !== 'typescript') {
     throw new Error(`can't run "${language}" code against JS tests`);
@@ -113,12 +113,17 @@ function runSuite(q: SeedQuestion, code: string, language: string, suite: Suite)
 }
 
 /** Run Python code against structured cases using the shared Pyodide harness. */
-export async function runPython(code: string, cases: BackendTestCase[], functionName: string): Promise<CaseResult[]> {
+export async function runPython(
+  code: string,
+  cases: BackendTestCase[],
+  functionName: string,
+  argTypes: string[] = []
+): Promise<CaseResult[]> {
   const dir = mkdtempSync(join(tmpdir(), 'question-verify-'));
   try {
     writeFileSync(join(dir, 'solution.py'), code);
     writeFileSync(join(dir, 'cases.json'), JSON.stringify(cases));
-    writeFileSync(join(dir, 'harness.py'), PYTHON_HARNESS.replace('__FN_NAME__', functionName));
+    writeFileSync(join(dir, 'harness.py'), pythonHarness(functionName, argTypes));
 
     const stdout = await new Promise<string>((resolve, reject) => {
       const child = spawn('python3', ['-I', 'harness.py'], { cwd: dir });
