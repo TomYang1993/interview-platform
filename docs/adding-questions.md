@@ -102,6 +102,8 @@ The local `python3` may be older than the Pyodide runtime users get (Python 3.13
 
 ## Shipping to production
 
+If the question relies on a platform change that hasn't been released yet (a new `question.json` field such as `argTypes` or `solutionTitles`, or a new grader feature), cut a release first. See [releasing.md](releasing.md).
+
 1. Add or edit the question in the content repo and open a PR there.
 2. Dry run against local, then write it:
    `npx tsx scripts/import-questions.ts ../interview-platform-content/questions/<slug> --write`
