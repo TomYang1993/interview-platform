@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma, QuestionVersionStatus } from '@prisma/client';
-import type { SeedQuestion } from './types';
+import type { SeedQuestion, SeedSolution } from './types';
 import { refreshQuestionRenderData } from '../../lib/questions-snapshot';
 import { ensureTagIds } from '../../lib/question-tags';
 
@@ -117,31 +117,7 @@ export async function seedQuestion(
   await refreshQuestionRenderData(q.id);
 
   // Official solutions
-  if (question.solutions) {
-    for (const sol of question.solutions) {
-      const solId = officialSolutionId(q.id, sol.key ?? sol.language);
-      await prisma.officialSolution.upsert({
-        where: { id: solId },
-        update: {
-          title: sol.title ?? null,
-          position: sol.position ?? 0,
-          explanation: sol.explanation,
-          code: sol.code,
-          complexity: sol.complexity ?? null,
-        },
-        create: {
-          id: solId,
-          questionId: q.id,
-          language: sol.language,
-          title: sol.title ?? null,
-          position: sol.position ?? 0,
-          explanation: sol.explanation,
-          code: sol.code,
-          complexity: sol.complexity ?? null,
-        },
-      });
-    }
-  }
+  if (question.solutions) await syncOfficialSolutions(prisma, q.id, question.solutions);
 
   return q;
 }
@@ -163,6 +139,39 @@ export async function seedAllQuestions(
   }
 
   return questionMap;
+}
+
+/**
+ * Upsert each seeded solution by its stable id, then delete seeded rows whose
+ * key is gone (a renamed or removed approach), so a re-import leaves exactly
+ * the content repo's solutions. Rows added in the admin UI have cuid ids,
+ * not the seeded prefix, and are never touched.
+ */
+export async function syncOfficialSolutions(
+  prisma: Pick<PrismaClient, 'officialSolution'>,
+  questionId: string,
+  solutions: SeedSolution[],
+) {
+  const ids: string[] = [];
+  for (const sol of solutions) {
+    const id = officialSolutionId(questionId, sol.key ?? sol.language);
+    ids.push(id);
+    const fields = {
+      title: sol.title ?? null,
+      position: sol.position ?? 0,
+      explanation: sol.explanation,
+      code: sol.code,
+      complexity: sol.complexity ?? null,
+    };
+    await prisma.officialSolution.upsert({
+      where: { id },
+      update: fields,
+      create: { id, questionId, language: sol.language, ...fields },
+    });
+  }
+  await prisma.officialSolution.deleteMany({
+    where: { questionId, id: { startsWith: officialSolutionId(questionId, ''), notIn: ids } },
+  });
 }
 
 /** Stable id for a seeded solution, e.g. `<questionId>-official-python.iterative`. */
