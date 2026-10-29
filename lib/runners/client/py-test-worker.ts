@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { PYTHON_HARNESS } from '@/lib/runners/python-harness';
+import { pythonHarness } from '@/lib/runners/python-harness';
 
 interface PyodideInterface {
   FS: { writeFile: (path: string, data: string | Uint8Array) => void };
@@ -25,6 +25,7 @@ interface RunMessage {
   userCode: string;
   cases: PyCase[];
   functionName: string;
+  argTypes?: string[];
 }
 
 interface ResultMessage {
@@ -54,7 +55,7 @@ function getPyodide(): Promise<PyodideInterface> {
 }
 
 self.onmessage = async (e: MessageEvent<RunMessage>) => {
-  const { type, userCode, cases, functionName } = e.data;
+  const { type, userCode, cases, functionName, argTypes } = e.data;
   if (type !== 'RUN') return;
 
   const started = performance.now();
@@ -70,8 +71,7 @@ self.onmessage = async (e: MessageEvent<RunMessage>) => {
     py.FS.writeFile('solution.py', userCode);
     py.FS.writeFile('cases.json', JSON.stringify(cases));
 
-    const harness = PYTHON_HARNESS.replace('__FN_NAME__', functionName);
-    await py.runPythonAsync(harness);
+    await py.runPythonAsync(pythonHarness(functionName, argTypes));
 
     const results: { name: string; passed: boolean; error?: string }[] = [];
     let loadError: string | null = null;

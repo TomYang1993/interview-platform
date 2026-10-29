@@ -33,6 +33,8 @@ interface EditorWorkspaceProps {
   publicTestCode: string;
   publicTestCases?: PyCase[] | null;
   functionName?: string | null;
+  /** Python grader arg conversions, e.g. ["tree"]. */
+  argTypes?: string[];
   expiresAt?: string;
 }
 
@@ -52,6 +54,7 @@ export function EditorWorkspace({
   publicTestCode,
   publicTestCases,
   functionName,
+  argTypes = [],
   expiresAt,
 }: EditorWorkspaceProps) {
   const { toast } = useToast();
@@ -268,7 +271,7 @@ export function EditorWorkspace({
     if (!functionName) {
       throw new Error('Question is missing a function name');
     }
-    return pyRunner.runTests(currentCode, publicTestCases, functionName);
+    return pyRunner.runTests(currentCode, publicTestCases, functionName, argTypes);
   }
 
   // ─── Run public tests ───
@@ -333,13 +336,14 @@ export function EditorWorkspace({
       } else {
         const ht = (await htRes.json()) as {
           functionName: string | null;
+          argTypes?: string[];
           testCases: PyCase[];
         };
         if (!ht.functionName) {
           throw new Error('Question is missing a function name');
         }
         if (ht.testCases.length > 0) {
-          const out = await pyRunner.runTests(currentCode, ht.testCases, ht.functionName);
+          const out = await pyRunner.runTests(currentCode, ht.testCases, ht.functionName, ht.argTypes ?? []);
           hiddenResults = out.results;
         }
       }

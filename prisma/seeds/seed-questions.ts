@@ -41,6 +41,7 @@ export async function seedQuestion(
       hiddenTestCode: question.hiddenTestCode ?? null,
       language: question.language ?? null,
       functionName: question.functionName ?? null,
+      argTypes: question.argTypes ?? [],
       publicTestCases: (question.publicTestCases ?? Prisma.DbNull) as unknown as Prisma.InputJsonValue,
       hiddenTestCases: (question.hiddenTestCases ?? Prisma.DbNull) as unknown as Prisma.InputJsonValue,
       ...(isPublished !== undefined && { isPublished }),
@@ -59,6 +60,7 @@ export async function seedQuestion(
       hiddenTestCode: question.hiddenTestCode ?? null,
       language: question.language ?? null,
       functionName: question.functionName ?? null,
+      argTypes: question.argTypes ?? [],
       publicTestCases: (question.publicTestCases ?? Prisma.DbNull) as unknown as Prisma.InputJsonValue,
       hiddenTestCases: (question.hiddenTestCases ?? Prisma.DbNull) as unknown as Prisma.InputJsonValue,
     },
@@ -117,10 +119,12 @@ export async function seedQuestion(
   // Official solutions
   if (question.solutions) {
     for (const sol of question.solutions) {
-      const solId = `${q.id}-official-${sol.language}`;
+      const solId = officialSolutionId(q.id, sol.key ?? sol.language);
       await prisma.officialSolution.upsert({
         where: { id: solId },
         update: {
+          title: sol.title ?? null,
+          position: sol.position ?? 0,
           explanation: sol.explanation,
           code: sol.code,
           complexity: sol.complexity ?? null,
@@ -129,6 +133,8 @@ export async function seedQuestion(
           id: solId,
           questionId: q.id,
           language: sol.language,
+          title: sol.title ?? null,
+          position: sol.position ?? 0,
           explanation: sol.explanation,
           code: sol.code,
           complexity: sol.complexity ?? null,
@@ -157,4 +163,9 @@ export async function seedAllQuestions(
   }
 
   return questionMap;
+}
+
+/** Stable id for a seeded solution, e.g. `<questionId>-official-python.iterative`. */
+export function officialSolutionId(questionId: string, key: string): string {
+  return `${questionId}-official-${key}`;
 }

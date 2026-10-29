@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import type { SeedQuestion } from './types';
+import { officialSolutionId } from './seed-questions';
 
 export type FieldDiff = { field: string; seed: unknown; db: unknown };
 
@@ -42,6 +43,10 @@ export async function diffQuestion(prisma: PrismaClient, seed: SeedQuestion): Pr
     if (!jsonEqual(sv, dv)) diffs.push({ field: f, seed: sv, db: dv });
   }
 
+  if (!jsonEqual(seed.argTypes ?? [], q.argTypes)) {
+    diffs.push({ field: 'argTypes', seed: seed.argTypes ?? [], db: q.argTypes });
+  }
+
   // JSON test cases
   for (const f of ['publicTestCases', 'hiddenTestCases'] as const) {
     const sv = seed[f] ?? null;
@@ -71,28 +76,33 @@ export async function diffQuestion(prisma: PrismaClient, seed: SeedQuestion): Pr
     }
   }
 
-  // Solutions — match by language
-  const seedSols = seed.solutions ?? [];
+  // Solutions — match by key ("python", "python.iterative"). Seeded rows carry
+  // the key in their id; rows added in the admin UI fall back to language.
+  const seedPrefix = officialSolutionId(q.id, '');
+  const dbKey = (s: (typeof q.officialSolutions)[number]) =>
+    s.id.startsWith(seedPrefix) ? s.id.slice(seedPrefix.length) : s.language;
+  const seedSols = (seed.solutions ?? []).map((s) => ({ ...s, key: s.key ?? s.language }));
   for (const ss of seedSols) {
-    const ds = q.officialSolutions.find((s) => s.language === ss.language);
+    const ds = q.officialSolutions.find((s) => dbKey(s) === ss.key);
     if (!ds) {
-      diffs.push({ field: `solution[${ss.language}]`, seed: '<present>', db: '<missing>' });
+      diffs.push({ field: `solution[${ss.key}]`, seed: '<present>', db: '<missing>' });
       continue;
     }
-    if (!jsonEqual(ss.code, ds.code)) {
-      diffs.push({ field: `solution[${ss.language}].code`, seed: ss.code, db: ds.code });
-    }
-    if (!jsonEqual(ss.explanation, ds.explanation)) {
-      diffs.push({ field: `solution[${ss.language}].explanation`, seed: ss.explanation, db: ds.explanation });
-    }
-    if (!jsonEqual(ss.complexity ?? null, ds.complexity ?? null)) {
-      diffs.push({ field: `solution[${ss.language}].complexity`, seed: ss.complexity, db: ds.complexity });
+    const fields = [
+      ['title', ss.title ?? null, ds.title],
+      ['position', ss.position ?? 0, ds.position],
+      ['code', ss.code, ds.code],
+      ['explanation', ss.explanation, ds.explanation],
+      ['complexity', ss.complexity ?? null, ds.complexity ?? null],
+    ] as const;
+    for (const [field, sv, dv] of fields) {
+      if (!jsonEqual(sv, dv)) diffs.push({ field: `solution[${ss.key}].${field}`, seed: sv, db: dv });
     }
   }
   // Extra DB solutions not in seed
   for (const ds of q.officialSolutions) {
-    if (!seedSols.find((ss) => ss.language === ds.language)) {
-      diffs.push({ field: `solution[${ds.language}]`, seed: '<missing>', db: '<present in DB>' });
+    if (!seedSols.find((ss) => ss.key === dbKey(ds))) {
+      diffs.push({ field: `solution[${dbKey(ds)}]`, seed: '<missing>', db: '<present in DB>' });
     }
   }
 
