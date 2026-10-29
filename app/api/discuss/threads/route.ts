@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db/prisma';
 import { badRequest, unauthorized } from '@/lib/api';
 import { requireUser } from '@/lib/auth/current-user';
+import { questionAccessError } from '@/lib/discuss';
 
 const bodySchema = z.object({
   questionId: z.string().min(1),
@@ -20,6 +21,14 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return badRequest(parsed.error.issues[0]?.message || 'Invalid thread payload');
   }
+
+  // Can't post on a question you can't see.
+  const question = await prisma.question.findUnique({
+    where: { id: parsed.data.questionId },
+    select: { id: true, accessTier: true, isPublished: true }
+  });
+  const denied = await questionAccessError(question, user.id);
+  if (denied) return denied;
 
   const thread = await prisma.discussionThread.create({
     data: {
