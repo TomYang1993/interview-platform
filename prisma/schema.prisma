@@ -143,6 +143,9 @@ model Question {
   hiddenTestCode   String?
   language         String?
   functionName     String?
+  /// How the Python grader converts each positional arg before the call, e.g.
+  /// ["tree"] turns a level-order list into a TreeNode. Empty/"json" = as-is.
+  argTypes         String[]               @default([])
   publicTestCases  Json?
   hiddenTestCases  Json?
   createdById      String?
@@ -206,6 +209,10 @@ model OfficialSolution {
   questionId  String
   language    String
   framework   String?
+  /// Approach name shown on the solution card, e.g. "Recursive DFS".
+  title       String?
+  /// Display order on the Solutions tab, smallest first.
+  position    Int      @default(0)
   explanation String
   code        String
   complexity  String?

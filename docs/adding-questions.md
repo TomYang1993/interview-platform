@@ -11,8 +11,9 @@ questions/<slug>/
   question.json              metadata
   prompt.md                  full prompt (markdown) shown in the editor
   starter/<key>.<ext>        starter code; <key> is the starterCode key
-  solutions/<language>.<ext> official solution
-  solutions/<language>.md    explanation for that solution
+  solutions/<key>.<ext>      official solution; <key> is the language, optionally
+                             followed by an approach: python.py, python.iterative.py
+  solutions/<key>.md         explanation for that solution
   tests/public.json          FUNCTION_PYTHON: visible cases
   tests/hidden.json          FUNCTION_PYTHON: graded on submit
   tests/public.js            FUNCTION_JS / REACT_APP: Jest-style test code
@@ -45,6 +46,38 @@ questions/<slug>/
 - Python test case: `{ "name": "...", "args": [...], "expected": ... }`. `args` is spread into the call, and the output is compared with `==` after a JSON round-trip.
 - Hidden tests are sent to the browser on submit, so keep stress cases around 10⁴ elements rather than 10⁵.
 
+### Tree arguments
+
+Set `argTypes` to have the grader convert args before the call, one entry per positional arg:
+
+```json
+"functionName": "find_min_path",
+"argTypes": ["tree"]
+```
+
+- `"tree"`: the test case holds a level-order list with `null` gaps, e.g. `[5, 4, 8, 11, null, 13, 4]`. The grader builds `TreeNode` objects (`val`, `left`, `right`) and passes the root, or `None` for `[]`.
+- `"json"`: passed as-is (the default when `argTypes` is omitted).
+- `TreeNode` is defined in the solution's namespace before it runs, so starter code can use it in type hints without declaring it. Show the class in a comment so users know its shape.
+- Return values still go through the JSON comparison, so return plain lists or numbers, not nodes.
+
+### Several approaches
+
+A question can ship more than one official solution per language, e.g. a recursive one plus an iterative follow-up:
+
+```
+solutions/python.py            solutions/python.md
+solutions/python.iterative.py  solutions/python.iterative.md
+```
+
+```json
+"complexity": { "python": "O(n) time, O(h) space", "python.iterative": "O(n) time, O(h) space" },
+"solutionTitles": { "python": "Recursive DFS", "python.iterative": "Iterative DFS · follow-up" }
+```
+
+- `solutionTitles` gives each card its heading. Its order is the order on the Solutions tab. It's required for every solution of a language that has more than one.
+- The importer verifies every approach against all the tests.
+- Put a follow-up in the prompt as a `### Follow-up` section after Constraints. It isn't graded separately, so the tests have to stay within limits both approaches can pass.
+
 ## Importing
 
 ```bash
@@ -68,6 +101,8 @@ It's a dry run unless you pass `--write`. Any validation or verification failure
 The local `python3` may be older than the Pyodide runtime users get (Python 3.13). Stick to syntax your local version supports, or install a newer `python3`.
 
 ## Shipping to production
+
+If the question relies on a platform change that hasn't been released yet (a new `question.json` field such as `argTypes` or `solutionTitles`, or a new grader feature), cut a release first. See [releasing.md](releasing.md).
 
 1. Add or edit the question in the content repo and open a PR there.
 2. Dry run against local, then write it:

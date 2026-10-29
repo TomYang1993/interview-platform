@@ -124,6 +124,7 @@ export default async function QuestionDetailPage({ params }: PageProps) {
             (question.publicTestCases as { name: string; args: unknown[]; expected: unknown }[] | null) ?? null
           }
           functionName={question.functionName ?? null}
+          argTypes={question.argTypes}
           expiresAt={expiresAt}
         />
       </DesktopOnlyGate>

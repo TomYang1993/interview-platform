@@ -1,7 +1,16 @@
 import { QuestionType, Difficulty, AccessTier } from '@prisma/client';
 
 export interface SeedSolution {
+  /**
+   * Identifies the solution within its question, e.g. "python" or
+   * "python.iterative" (the content repo file name). Defaults to `language`.
+   */
+  key?: string;
   language: string;
+  /** Approach name shown on the solution card, e.g. "Recursive DFS". */
+  title?: string;
+  /** Display order on the Solutions tab, smallest first. */
+  position?: number;
   code: string;
   explanation: string;
   complexity?: string;
@@ -36,6 +45,8 @@ export interface SeedQuestion {
   // Backend (Python/Go/Java/Rust) questions — structured JSON cases + entrypoint.
   language?: 'python' | 'go' | 'java' | 'rust';
   functionName?: string;
+  /** Python grader arg conversions, e.g. ["tree"] (see lib/runners/python-harness). */
+  argTypes?: string[];
   publicTestCases?: BackendTestCase[];
   hiddenTestCases?: BackendTestCase[];
 

@@ -65,8 +65,39 @@ describe('loadQuestionDir', () => {
       hiddenTestCases: [{ name: 'negative', args: [-1, -2], expected: -3 }],
     });
     expect(q.solutions).toEqual([
-      { language: 'python', code: 'def add(a, b):\n    return a + b\n', explanation: 'Return the sum.', complexity: 'O(1)' },
+      {
+        key: 'python',
+        language: 'python',
+        position: 0,
+        code: 'def add(a, b):\n    return a + b\n',
+        explanation: 'Return the sum.',
+        complexity: 'O(1)',
+      },
     ]);
+    expect(q.argTypes).toEqual([]);
+  });
+
+  it('loads several approaches per language, ordered as listed in solutionTitles', () => {
+    const q = loadQuestionDir(
+      pythonQuestion({
+        'question.json': {
+          ...pythonMeta,
+          complexity: { python: 'O(1)', 'python.loop': 'O(|b|)' },
+          solutionTitles: { 'python.loop': 'Counting up', python: 'Plus operator' },
+        },
+        'solutions/python.loop.py': 'def add(a, b):\n    return sum([a, b])\n',
+        'solutions/python.loop.md': 'Loop it.',
+      })
+    );
+    expect(q.solutions?.map(({ key, language, title, position, complexity }) => ({ key, language, title, position, complexity }))).toEqual([
+      { key: 'python.loop', language: 'python', title: 'Counting up', position: 0, complexity: 'O(|b|)' },
+      { key: 'python', language: 'python', title: 'Plus operator', position: 1, complexity: 'O(1)' },
+    ]);
+  });
+
+  it('reads argTypes for Python questions', () => {
+    const q = loadQuestionDir(pythonQuestion({ 'question.json': { ...pythonMeta, argTypes: ['json', 'json'] } }));
+    expect(q.argTypes).toEqual(['json', 'json']);
   });
 
   it('maps a JS question folder with test code files', () => {
@@ -94,6 +125,14 @@ describe('loadQuestionDir', () => {
     ['missing explanation', { 'solutions/python.md': undefined }, /missing python\.md/],
     ['unknown metadata key', { 'question.json': { ...pythonMeta, isPublished: true } }, /Unrecognized key/],
     ['missing functionName', { 'question.json': { ...pythonMeta, functionName: undefined } }, /functionName is required/],
+    [
+      'a second approach without a title',
+      { 'solutions/python.loop.py': 'def add(a, b):\n    return a + b\n', 'solutions/python.loop.md': 'Loop.' },
+      /solutionTitles\.python is required when python has more than one solution/,
+    ],
+    ['a title with no solution file', { 'question.json': { ...pythonMeta, solutionTitles: { 'python.fast': 'Fast' } } }, /solutionTitles\.python\.fast has no matching/],
+    ['an unknown arg type', { 'question.json': { ...pythonMeta, argTypes: ['graph', 'json'] } }, /argTypes\.0/],
+    ['argTypes that miss an arg', { 'question.json': { ...pythonMeta, argTypes: ['json'] } }, /test "small" has 2 args but argTypes lists 1/],
   ])('rejects %s', (_label, overrides, message) => {
     const files = { ...overrides } as Record<string, string | object>;
     const dir = pythonQuestion(Object.fromEntries(Object.entries(files).filter(([, v]) => v !== undefined)));
@@ -148,6 +187,50 @@ describe('verifyQuestion', () => {
     expect(report.warnings).toEqual([expect.stringContaining('starter/python passes every test')]);
   });
 
+  it('builds tree args and verifies every approach', async () => {
+    const dir = writeQuestion('tree-sum', {
+      'question.json': {
+        ...pythonMeta,
+        slug: 'tree-sum',
+        functionName: 'tree_sum',
+        argTypes: ['tree'],
+        complexity: {},
+        solutionTitles: { python: 'Recursive', 'python.stack': 'Iterative' },
+      },
+      'prompt.md': 'Implement `tree_sum(root)`.',
+      'starter/python.py': 'def tree_sum(root):\n    return 0\n',
+      // TreeNode is provided by the grader; the annotation proves it exists before the code runs.
+      'solutions/python.py':
+        'from typing import Optional\n\ndef tree_sum(root: Optional[TreeNode]) -> int:\n' +
+        '    return 0 if root is None else root.val + tree_sum(root.left) + tree_sum(root.right)\n',
+      'solutions/python.md': 'Recurse.',
+      'solutions/python.stack.py':
+        'def tree_sum(root):\n    total, stack = 0, [root]\n    while stack:\n        node = stack.pop()\n' +
+        '        if node:\n            total += node.val\n            stack += [node.left, node.right]\n    return total\n',
+      'solutions/python.stack.md': 'Use a stack.',
+      'tests/public.json': [
+        { name: 'full', args: [[1, 2, 3]], expected: 6 },
+        { name: 'empty', args: [[]], expected: 0 },
+      ],
+      'tests/hidden.json': [
+        { name: 'gaps', args: [[1, null, 2, null, 3]], expected: 6 },
+        { name: 'deep chain', args: [[1, ...Array.from({ length: 299 }, () => [null, 1]).flat()]], expected: 300 },
+      ],
+    });
+    const report = await verifyQuestion(loadQuestionDir(dir));
+    expect(report).toEqual({
+      ok: true,
+      errors: [],
+      warnings: [],
+      summary: [
+        'python solution · public: 2/2',
+        'python solution · hidden: 2/2',
+        'python.stack solution · public: 2/2',
+        'python.stack solution · hidden: 2/2',
+      ],
+    });
+  });
+
   it('verifies JS and TS solutions against Jest-style test code', async () => {
     const dir = writeQuestion('double-it', {
       'question.json': { ...pythonMeta, slug: 'double-it', type: 'FUNCTION_JS', functionName: undefined, complexity: {} },
@@ -167,6 +250,22 @@ describe('verifyQuestion', () => {
       'javascript solution · hidden: 1/1',
       'typescript solution · public: 1/1',
       'typescript solution · hidden: 0/1',
+    ]);
+  });
+});
+
+describe('lintQuestion', () => {
+  it('names the file for callout problems in the prompt and solution explanation', async () => {
+    const { lintQuestion } = await import('@/prisma/seeds/content-loader');
+    const q = loadQuestionDir(
+      pythonQuestion({
+        'prompt.md': 'Implement `add(a, b)`.\n\n> [!warn] Watch out\n> overflow',
+        'solutions/python.md': '> [!Tip] Sum it\n> easy',
+      })
+    );
+    expect(lintQuestion(q)).toEqual([
+      "prompt.md line 3: [!warn] won't render as a callout — use [!warning]",
+      "solutions/python.md line 1: [!Tip] won't render as a callout — use [!tip]",
     ]);
   });
 });
